@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type QueueItem struct {
+type FifoQueueItem struct {
 	MessageID         string
 	GroupID           string
 	ReceiveTimestamp  time.Time
