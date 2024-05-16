@@ -20,10 +20,6 @@ var (
 	maxTimestampAge           = 7 * 24 * time.Hour
 )
 
-type Alerts struct {
-	Alerts []*Alert `json:"alerts"`
-}
-
 // Alert represents a system alert/warning/info event
 type Alert struct {
 	Timestamp                 time.Time              `json:"timestamp"`
