@@ -30,9 +30,7 @@ func (q *InMemoryFifoQueue) Send(ctx context.Context, groupID, dedupID, body str
 		Ack: func(_ context.Context) error {
 			return nil
 		},
-		Extend: func(_ context.Context) error {
-			return nil
-		},
+		ExtendVisibility: nil, // Message visibility extension is not supported in this implementation
 	}
 
 	select {

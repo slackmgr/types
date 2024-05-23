@@ -1,6 +1,6 @@
 package common
 
-// WebhookButtonStyle represents a webhook button style
+// WebhookButtonStyle represents a webhook button style.
 type WebhookButtonStyle string
 
 const (
@@ -20,11 +20,13 @@ func init() {
 	}
 }
 
+// WebhookButtonStyleIsValid returns true if the provided WebhookButtonStyle is valid.
 func WebhookButtonStyleIsValid(s WebhookButtonStyle) bool {
 	_, ok := validWebhookButtonStyles[s]
 	return ok
 }
 
+// ValidWebhookButtonStyles returns a slice of valid WebhookButtonStyle values.
 func ValidWebhookButtonStyles() []string {
 	r := make([]string, len(validWebhookButtonStyles))
 	i := 0

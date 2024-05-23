@@ -1,6 +1,6 @@
 package common
 
-// WebhookDisplayMode represents a display mode for a webhook button
+// WebhookDisplayMode represents a display mode for a webhook button.
 type WebhookDisplayMode string
 
 const (
@@ -20,11 +20,13 @@ var validWebhookDisplayModes = map[WebhookDisplayMode]struct{}{
 	WebhookDisplayModeResolvedIssue: {},
 }
 
+// WebhookDisplayModeIsValid returns true if the provided WebhookDisplayMode is valid.
 func WebhookDisplayModeIsValid(s WebhookDisplayMode) bool {
 	_, ok := validWebhookDisplayModes[s]
 	return ok
 }
 
+// ValidWebhookDisplayModes returns a slice of valid WebhookDisplayMode values.
 func ValidWebhookDisplayModes() []string {
 	r := make([]string, len(validWebhookDisplayModes))
 	i := 0

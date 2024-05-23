@@ -11,24 +11,25 @@ import (
 )
 
 var (
-	// slackChannelIDOrNameRegex matches valid Slack channel IDs and channel names. Names are converted to IDs by the API.
-	slackChannelIDOrNameRegex = regexp.MustCompile(`^[0-9a-zA-Z\-_]{1,80}$`)
+	// SlackChannelIDOrNameRegex matches valid Slack channel IDs and channel names.
+	// Channel names are mapped to channel IDs by the API.
+	SlackChannelIDOrNameRegex = regexp.MustCompile(`^[0-9a-zA-Z\-_]{1,80}$`)
 
-	// iconRegex matches valid Slack icon emojis, on the format ':emoji:'.
-	iconRegex = regexp.MustCompile(`^:[^:]{1,50}:$`)
+	// IconRegex matches valid Slack icon emojis, on the format ':emoji:'.
+	IconRegex = regexp.MustCompile(`^:[^:]{1,50}:$`)
 
-	// slackMentionRegex matches valid Slack mentions, such as <!here>, <!channel> and <@U12345678>.
-	slackMentionRegex = regexp.MustCompile(`^((<!here>)|(<!channel>)|(<@[^>\s]{1,100}>))$`)
+	// SlackMentionRegex matches valid Slack mentions, such as <!here>, <!channel> and <@U12345678>.
+	SlackMentionRegex = regexp.MustCompile(`^((<!here>)|(<!channel>)|(<@[^>\s]{1,100}>))$`)
 
-	// maxTimestampAge is the maximum age of an alert timestamp. If the timestamp is older than this, it will be replaced with the current time.
-	maxTimestampAge = 7 * 24 * time.Hour
+	// MaxTimestampAge is the maximum age of an alert timestamp. If the timestamp is older than this, it will be replaced with the current time.
+	MaxTimestampAge = 7 * 24 * time.Hour
 
-	maxHeaderLength       = 130
-	maxFallbackTextLength = 150
-	maxTextLength         = 10000
-	maxAuthorLength       = 100
-	maxHostLength         = 100
-	maxFooterLength       = 300
+	MaxHeaderLength       = 130
+	MaxFallbackTextLength = 150
+	MaxTextLength         = 10000
+	MaxAuthorLength       = 100
+	MaxHostLength         = 100
+	MaxFooterLength       = 300
 )
 
 // Alert represents a single alert that can be sent to the Slack Manager.
@@ -183,7 +184,7 @@ func NewAlert(severity AlertSeverity) *Alert {
 }
 
 func (a *Alert) Clean() {
-	if time.Since(a.Timestamp) > maxTimestampAge {
+	if time.Since(a.Timestamp) > MaxTimestampAge {
 		a.Timestamp = time.Now()
 	}
 
@@ -203,8 +204,8 @@ func (a *Alert) Clean() {
 	a.IconEmoji = strings.TrimSpace(a.IconEmoji)
 	a.Severity = AlertSeverity(strings.ToLower(strings.TrimSpace(string(a.Severity))))
 
-	if len(a.FallbackText) > maxFallbackTextLength {
-		a.FallbackText = a.FallbackText[:maxFallbackTextLength-3] + "..."
+	if len(a.FallbackText) > MaxFallbackTextLength {
+		a.FallbackText = a.FallbackText[:MaxFallbackTextLength-3] + "..."
 	}
 
 	if a.Severity == "critical" {
@@ -221,31 +222,31 @@ func (a *Alert) Clean() {
 
 	// Max length in the Slack API is 150, see https://api.slack.com/reference/block-kit/blocks#header
 	// We also need to leave some space for the :status: emoji to be replaced with something a bit longer by the Slack Manager
-	if len(a.Header) > maxHeaderLength {
-		a.Header = strings.TrimSpace(a.Header[:maxHeaderLength-3]) + "..."
+	if len(a.Header) > MaxHeaderLength {
+		a.Header = strings.TrimSpace(a.Header[:MaxHeaderLength-3]) + "..."
 	}
 
-	if len(a.HeaderWhenResolved) > maxHeaderLength {
-		a.HeaderWhenResolved = strings.TrimSpace(a.HeaderWhenResolved[:maxHeaderLength-3]) + "..."
+	if len(a.HeaderWhenResolved) > MaxHeaderLength {
+		a.HeaderWhenResolved = strings.TrimSpace(a.HeaderWhenResolved[:MaxHeaderLength-3]) + "..."
 	}
 
 	a.Text = shortenAlertTextIfNeeded(a.Text)
 	a.TextWhenResolved = shortenAlertTextIfNeeded(a.TextWhenResolved)
 
-	if len(a.Author) > maxAuthorLength {
-		a.Author = strings.TrimSpace(a.Author[:maxAuthorLength-3]) + "..."
+	if len(a.Author) > MaxAuthorLength {
+		a.Author = strings.TrimSpace(a.Author[:MaxAuthorLength-3]) + "..."
 	}
 
-	if len(a.Host) > maxHostLength {
-		a.Host = strings.TrimSpace(a.Host[:maxHostLength-3]) + "..."
+	if len(a.Host) > MaxHostLength {
+		a.Host = strings.TrimSpace(a.Host[:MaxHostLength-3]) + "..."
 	}
 
 	if len(a.Username) > 100 {
 		a.Username = strings.TrimSpace(a.Username[:97]) + "..."
 	}
 
-	if len(a.Footer) > maxFooterLength {
-		a.Footer = strings.TrimSpace(a.Footer[:maxFooterLength-3]) + "..."
+	if len(a.Footer) > MaxFooterLength {
+		a.Footer = strings.TrimSpace(a.Footer[:MaxFooterLength-3]) + "..."
 	}
 
 	for _, field := range a.Fields {
@@ -336,7 +337,7 @@ func (a *Alert) Validate() error {
 
 func (a *Alert) ValidateSlackChannelID() error {
 	if a.SlackChannelID != "" {
-		if !slackChannelIDOrNameRegex.MatchString(a.SlackChannelID) {
+		if !SlackChannelIDOrNameRegex.MatchString(a.SlackChannelID) {
 			return fmt.Errorf("slackChannelId '%s' is invalid", a.SlackChannelID)
 		}
 
@@ -367,7 +368,7 @@ func (a *Alert) ValidateIcon() error {
 		return nil
 	}
 
-	if !iconRegex.MatchString(a.IconEmoji) {
+	if !IconRegex.MatchString(a.IconEmoji) {
 		return fmt.Errorf("iconEmoji '%s' is invalid", a.IconEmoji)
 	}
 
@@ -627,13 +628,13 @@ func (a *Alert) ValidateEscalation() error {
 		}
 
 		for j, mention := range e.SlackMentions {
-			if !slackMentionRegex.MatchString(mention) {
+			if !SlackMentionRegex.MatchString(mention) {
 				return fmt.Errorf("escalation[%d].slackMentions[%d] '%s' is not valid", index, j, mention)
 			}
 		}
 
 		if e.MoveToChannel != "" {
-			if !slackChannelIDOrNameRegex.MatchString(e.MoveToChannel) {
+			if !SlackChannelIDOrNameRegex.MatchString(e.MoveToChannel) {
 				return fmt.Errorf("escalation[%d].moveToChannel '%s' is invalid", index, e.MoveToChannel)
 			}
 		}
@@ -643,15 +644,15 @@ func (a *Alert) ValidateEscalation() error {
 }
 
 func shortenAlertTextIfNeeded(text string) string {
-	if len(text) <= maxTextLength {
+	if len(text) <= MaxTextLength {
 		return text
 	}
 
 	endsWithCodeBlock := strings.HasSuffix(text, "```")
 
 	if endsWithCodeBlock {
-		return strings.TrimSpace(text[:maxTextLength-6]) + "...```"
+		return strings.TrimSpace(text[:MaxTextLength-6]) + "...```"
 	}
 
-	return strings.TrimSpace(text[:maxTextLength-3]) + "..."
+	return strings.TrimSpace(text[:MaxTextLength-3]) + "..."
 }

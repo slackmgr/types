@@ -1,6 +1,6 @@
 package common
 
-// AlertSeverity represents the severity for a given alert
+// WebhookAccessLevel is the access level required to invoke a webhook.
 type WebhookAccessLevel string
 
 const (
@@ -24,11 +24,13 @@ func init() {
 	}
 }
 
+// WebhookAccessLevelIsValid returns true if the provided WebhookAccessLevel is valid.
 func WebhookAccessLevelIsValid(s WebhookAccessLevel) bool {
 	_, ok := validWebhookAccessLevels[s]
 	return ok
 }
 
+// ValidWebhookAccessLevels returns a slice of valid WebhookAccessLevel values.
 func ValidWebhookAccessLevels() []string {
 	r := make([]string, len(validWebhookAccessLevels))
 	i := 0

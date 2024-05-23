@@ -12,5 +12,5 @@ type FifoQueueItem struct {
 	VisibilityTimeout time.Duration
 	Body              string
 	Ack               func(ctx context.Context) error
-	Extend            func(ctx context.Context) error
+	ExtendVisibility  func(ctx context.Context) error
 }
