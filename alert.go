@@ -62,7 +62,8 @@ type Alert struct {
 	// This field is optional. If unset, the Text field is used for all alert states.
 	TextWhenResolved string `json:"textWhenResolved"`
 
-	// FallbackText is the text displayed in Slack notifications. It should be a short, human-readable summary of the alert, without markdown or line breaks.
+	// FallbackText is the text displayed in Slack notifications.
+	// It should be a short, human-readable summary of the alert, without markdown or line breaks.
 	// It is automatically truncated to 150 characters.
 	// This field is optional. If unset, Slack decides what to display in notifications (which may not always be ideal).
 	FallbackText string `json:"fallbackText"`
