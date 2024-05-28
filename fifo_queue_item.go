@@ -7,7 +7,7 @@ import (
 
 type FifoQueueItem struct {
 	MessageID         string
-	GroupID           string
+	SlackChannelID    string
 	ReceiveTimestamp  time.Time
 	VisibilityTimeout time.Duration
 	Body              string

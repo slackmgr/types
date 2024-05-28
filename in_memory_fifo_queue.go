@@ -20,10 +20,10 @@ func NewInMemoryFifoQueue(bufferSize int, writeTimeout time.Duration) *InMemoryF
 	}
 }
 
-func (q *InMemoryFifoQueue) Send(ctx context.Context, groupID, dedupID, body string) error {
+func (q *InMemoryFifoQueue) Send(ctx context.Context, slackChannelID, dedupID, body string) error {
 	item := &FifoQueueItem{
 		MessageID:         uuid.New().String(),
-		GroupID:           groupID,
+		SlackChannelID:    slackChannelID,
 		ReceiveTimestamp:  time.Now(),
 		VisibilityTimeout: 0,
 		Body:              body,
