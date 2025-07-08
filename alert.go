@@ -258,12 +258,13 @@ func NewAlert(severity AlertSeverity) *Alert {
 	return &Alert{
 		Timestamp: time.Now().UTC(),
 		Severity:  severity,
-		Metadata:  make(map[string]interface{}),
+		Metadata:  make(map[string]any),
 	}
 }
 
-// DedupID returns the ID of the Alert (for database/storage purposes)
-func (a *Alert) DedupID() string {
+// UniqueID returns a unique and deterministic ID for this alert, for database/storage purposes.
+// The ID is based on certain fields of the alert, and is base64 encoded to ensure it is safe for use in URLs and as a database key.
+func (a *Alert) UniqueID() string {
 	return hash("alert", a.SlackChannelID, a.RouteKey, a.CorrelationID, a.Timestamp.Format(time.RFC3339Nano), a.Header, a.Text)
 }
 
@@ -294,9 +295,7 @@ func (a *Alert) Clean() {
 		a.FallbackText = a.FallbackText[:MaxFallbackTextLength-3] + "..."
 	}
 
-	if a.Severity == "" {
-		a.Severity = AlertError
-	} else if a.Severity == "critical" {
+	if a.Severity == "" || a.Severity == "critical" {
 		a.Severity = AlertError
 	}
 
