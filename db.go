@@ -57,10 +57,10 @@ type DB interface {
 	// SaveChannelProcessingState creates or updates a single channel processing state in the database.
 	//
 	// channelID is the Slack channel ID that the processing state belongs to. It MUST match the channel ID of the processing state.
-	SaveChannelProcessingState(ctx context.Context, channelID string, state ChannelProcessingState) error
+	SaveChannelProcessingState(ctx context.Context, channelID string, state *ChannelProcessingState) error
 
 	// FindChannelProcessingState finds a single channel processing state in the database, for the specified channel ID.
 	//
 	// The database implementation should return an error if the query matches multiple states, and [nil, nil] if no state is found.
-	FindChannelProcessingState(ctx context.Context, channelID string) (json.RawMessage, error)
+	FindChannelProcessingState(ctx context.Context, channelID string) (*ChannelProcessingState, error)
 }
