@@ -43,3 +43,14 @@ type MoveMapping interface {
 	// It is not URL safe, and should thus be encoded before being used in URLs or as part of a database key.
 	GetCorrelationID() string
 }
+
+type ChannelProcessingState interface {
+	json.Marshaler
+
+	// ChannelID returns the Slack channel ID that this processing state belongs to.
+	ChannelID() string
+
+	// UniqueID returns a unique and deterministic ID for this processing state, for database/storage purposes.
+	// The ID is based on the channel ID and is base64 encoded to ensure it is safe for use in URLs and as a database key.
+	UniqueID() string
+}
