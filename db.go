@@ -29,20 +29,20 @@ type DB interface {
 	// FindOpenIssueByCorrelationID finds a single open issue in the database, based on the provided channel ID and correlation ID.
 	//
 	// The database implementation should return an error if the query matches multiple issues, and [nil, nil] if no issue is found.
-	FindOpenIssueByCorrelationID(ctx context.Context, channelID, correlationID string) (json.RawMessage, error)
+	FindOpenIssueByCorrelationID(ctx context.Context, channelID, correlationID string) (string, json.RawMessage, error)
 
 	// FindIssueBySlackPostID finds a single issue in the database, based on the provided channel ID and Slack post ID.
 	//
 	// The database implementation should return an error if the query matches multiple issues, and [nil, nil] if no issue is found.
-	FindIssueBySlackPostID(ctx context.Context, channelID, postID string) (json.RawMessage, error)
+	FindIssueBySlackPostID(ctx context.Context, channelID, postID string) (string, json.RawMessage, error)
 
 	// LoadOpenIssues loads all open (non-archived) issues from the database, across all channels.
 	// The returned list may be empty if no open issues are found.
-	LoadOpenIssues(ctx context.Context) ([]json.RawMessage, error)
+	LoadOpenIssues(ctx context.Context) (map[string]json.RawMessage, error)
 
 	// LoadOpenIssuesInChannel loads all open (non-archived) issues from the database, for the specified channel ID.
 	// The returned list may be empty if no open issues are found in the channel.
-	LoadOpenIssuesInChannel(ctx context.Context, channelID string) ([]json.RawMessage, error)
+	LoadOpenIssuesInChannel(ctx context.Context, channelID string) (map[string]json.RawMessage, error)
 
 	// SaveMoveMapping creates or updates a single move mapping in the database.
 	//

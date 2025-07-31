@@ -4,12 +4,12 @@ import "io"
 
 type Logger interface {
 	Debug(msg string)
-	Debugf(format string, args ...interface{})
+	Debugf(format string, args ...any)
 	Info(msg string)
-	Infof(format string, args ...interface{})
+	Infof(format string, args ...any)
 	Error(msg string)
-	Errorf(format string, args ...interface{})
-	WithField(key string, value interface{}) Logger
-	WithFields(fields map[string]interface{}) Logger
+	Errorf(format string, args ...any)
+	WithField(key string, value any) Logger
+	WithFields(fields map[string]any) Logger
 	HttpLoggingHandler() io.Writer
 }
