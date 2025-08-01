@@ -95,6 +95,11 @@ func TestSaveIssue(t *testing.T, client common.DB) {
 	foundIssue = testIssueFromJSON(issueBody)
 	assert.Equal(t, issue2.ID, foundIssue.ID, "issue ID should match after saving with updated channel ID")
 	assert.Equal(t, newChannel, foundIssue.LastAlert.SlackChannelID, "channel ID should match after saving with updated channel ID")
+	// The issue should not be found in the old channel
+	id, issueBody, err = client.FindOpenIssueByCorrelationID(ctx, channel, corr2)
+	require.NoError(err, "should not error when looking up issue by old channel after update")
+	assert.Empty(t, id, "should not return ID for old channel after update")
+	assert.Nil(t, issueBody, "should not find issue by old channel after update")
 }
 
 func TestFindOpenIssueByCorrelationID(t *testing.T, client common.DB) {
