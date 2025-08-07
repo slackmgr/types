@@ -24,6 +24,11 @@ type DB interface {
 	// SaveIssues creates or updates multiple issues in the database.
 	SaveIssues(ctx context.Context, issues ...Issue) error
 
+	// MoveIssue moves an issue from one channel to another.
+	// This channel ID in the issue must match the targetChannelID.
+	// The sourceChannelID is used to find the existing issue in the database.
+	MoveIssue(ctx context.Context, issue Issue, sourceChannelID, targetChannelID string) error
+
 	// FindOpenIssueByCorrelationID finds a single open issue in the database, based on the provided channel ID and correlation ID.
 	//
 	// The database implementation should return an error if the query matches multiple issues, and [nil, nil] if no issue is found.
@@ -34,9 +39,10 @@ type DB interface {
 	// The database implementation should return an error if the query matches multiple issues, and [nil, nil] if no issue is found.
 	FindIssueBySlackPostID(ctx context.Context, channelID, postID string) (string, json.RawMessage, error)
 
-	// LoadOpenIssues loads all open (non-archived) issues from the database, across all channels.
-	// The returned list may be empty if no open issues are found.
-	LoadOpenIssues(ctx context.Context) (map[string]json.RawMessage, error)
+	// FindActiveChannels returns a list of all active channels in the database.
+	// An active channel is one that has at least one open issue.
+	// The returned list may be empty if no active channels are found.
+	FindActiveChannels(ctx context.Context) ([]string, error)
 
 	// LoadOpenIssuesInChannel loads all open (non-archived) issues from the database, for the specified channel ID.
 	// The returned list may be empty if no open issues are found in the channel.

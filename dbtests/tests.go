@@ -81,25 +81,56 @@ func TestSaveIssue(t *testing.T, client common.DB) {
 	foundIssue = testIssueFromJSON(issueBody)
 	assert.Equal(t, issue1.ID, foundIssue.ID, "issue ID should match after saving")
 	assert.Equal(t, issue1.SlackPostID, foundIssue.SlackPostID, "SlackPostID should match after saving")
+}
 
-	// Simulate a change in channel ID (.e. moving the issue)
-	// The database should allow updating the channel ID
-	newChannel := "C0ABABABAC"
-	issue2.LastAlert.SlackChannelID = newChannel
-	err = client.SaveIssue(ctx, issue2)
-	require.NoError(err, "should not error when saving issue with updated channel ID")
-	id, issueBody, err = client.FindOpenIssueByCorrelationID(ctx, newChannel, corr2)
+func TestMoveIssue(t *testing.T, client common.DB) {
+	ctx := context.Background()
+	channel1 := "C0ABABABAB"
+	channel2 := "C0ABABABAC"
+	assert := assert.New(t)
+	require := require.New(t)
+
+	corr1 := ksuid.New().String()
+	alert1 := newTestAlert(channel1, corr1)
+	issue1 := newTestIssue(alert1, ksuid.New().String())
+
+	corr2 := ksuid.New().String()
+	alert2 := newTestAlert(channel1, corr2)
+	issue2 := newTestIssue(alert2, ksuid.New().String())
+
+	err := client.SaveIssues(ctx, issue1, issue2)
+	require.NoError(err)
+	issuesChannel1, err := client.LoadOpenIssuesInChannel(ctx, channel1)
+	require.NoError(err, "should not error when loading open issues")
+	assert.Len(issuesChannel1, 2, "should have 2 issues in channel1 after saving")
+	issuesChannel2, err := client.LoadOpenIssuesInChannel(ctx, channel2)
+	require.NoError(err, "should not error when loading open issues in channel2")
+	assert.Empty(issuesChannel2, "should have 0 issues in channel2 after saving")
+
+	// Simulate moving the issue to channel2
+	issue1.LastAlert.SlackChannelID = channel2
+	err = client.MoveIssue(ctx, issue1, channel1, channel2)
+	require.NoError(err)
+
+	// Verify that the issue was moved correctly
+	issuesChannel1, err = client.LoadOpenIssuesInChannel(ctx, channel1)
+	require.NoError(err, "should not error when loading open issues after moving")
+	assert.Len(issuesChannel1, 1, "should have 1 issue left in channel1 after moving")
+	issuesChannel2, err = client.LoadOpenIssuesInChannel(ctx, channel2)
+	require.NoError(err, "should not error when loading open issues in channel2 after moving")
+	assert.Len(issuesChannel2, 1, "should have 1 issue in channel2 after moving")
+
+	// Verify that the moved issue cannot be found in the old channel
+	id, issueBody, err := client.FindOpenIssueByCorrelationID(ctx, channel1, corr1)
 	require.NoError(err, "failed to get issue after saving with updated channel ID")
-	assert.Equal(t, issue2.ID, id, "issue ID should match after saving with updated channel ID")
-	require.NotNil(issueBody, "issue body should not be nil after saving with updated channel ID")
-	foundIssue = testIssueFromJSON(issueBody)
-	assert.Equal(t, issue2.ID, foundIssue.ID, "issue ID should match after saving with updated channel ID")
-	assert.Equal(t, newChannel, foundIssue.LastAlert.SlackChannelID, "channel ID should match after saving with updated channel ID")
-	// The issue should not be found in the old channel
-	id, issueBody, err = client.FindOpenIssueByCorrelationID(ctx, channel, corr2)
-	require.NoError(err, "should not error when looking up issue by old channel after update")
-	assert.Empty(t, id, "should not return ID for old channel after update")
-	assert.Nil(t, issueBody, "should not find issue by old channel after update")
+	assert.Empty(id, "should not find issue in old channel after moving")
+	assert.Nil(issueBody, "should not find issue body in old channel after moving")
+
+	// Verify that the moved issue can be found in the new channel
+	id, issueBody, err = client.FindOpenIssueByCorrelationID(ctx, channel2, corr1)
+	require.NoError(err, "failed to get issue after moving to new channel")
+	assert.NotEmpty(id, "should find issue in new channel after moving")
+	assert.NotNil(issueBody, "should find issue body in new channel after moving")
 }
 
 func TestFindOpenIssueByCorrelationID(t *testing.T, client common.DB) {
@@ -242,14 +273,16 @@ func TestSaveIssues(t *testing.T, client common.DB) {
 	require.NoError(err, "should not error when saving multiple issues")
 
 	// Verify that the issues were saved correctly
-	issues, err := client.LoadOpenIssues(ctx)
+	issues, err := client.LoadOpenIssuesInChannel(ctx, channel)
 	require.NoError(err, "should not error when loading open issues")
 	assert.Len(issues, 3, "should have 3 issues after saving")
 }
 
-func TestLoadOpenIssues(t *testing.T, client common.DB) {
+func TestFindActiveChannels(t *testing.T, client common.DB) {
 	ctx := context.Background()
-	channel := "C0ABABABAB"
+	channel1 := "C0ABABABAB"
+	channel2 := "C0ABABABAC"
+	channel3 := "C0ABABABAD"
 	assert := assert.New(t)
 	require := require.New(t)
 
@@ -260,30 +293,33 @@ func TestLoadOpenIssues(t *testing.T, client common.DB) {
 	err = client.Init(ctx, true)
 	require.NoError(err, "should not error when initializing client")
 
-	issue1 := newTestIssue(newTestAlert(channel, ksuid.New().String()), ksuid.New().String())
-	issue2 := newTestIssue(newTestAlert(channel, ksuid.New().String()), ksuid.New().String())
-	issue3 := newTestIssue(newTestAlert(channel, ksuid.New().String()), ksuid.New().String())
+	issue1 := newTestIssue(newTestAlert(channel1, ksuid.New().String()), ksuid.New().String())
+	issue2 := newTestIssue(newTestAlert(channel2, ksuid.New().String()), ksuid.New().String())
+	issue2a := newTestIssue(newTestAlert(channel2, ksuid.New().String()), ksuid.New().String())
+	issue3 := newTestIssue(newTestAlert(channel3, ksuid.New().String()), ksuid.New().String())
+	issue3a := newTestIssue(newTestAlert(channel3, ksuid.New().String()), ksuid.New().String())
 	issue3.Archived = true // Mark one issue as archived
 
 	// Save the issues
-	err = client.SaveIssues(ctx, issue1, issue2, issue3)
+	err = client.SaveIssues(ctx, issue1, issue2, issue2a, issue3, issue3a)
 	require.NoError(err, "should not error when saving multiple issues")
 
-	// Verify that only open issues are loaded
-	issues, err := client.LoadOpenIssues(ctx)
-	require.NoError(err, "should not error when loading open issues")
-	assert.Len(issues, 2, "should have 2 open issues after saving")
+	// Verify that active channels are found correctly
+	issues, err := client.FindActiveChannels(ctx)
+	require.NoError(err, "should not error when finding active channels")
+	assert.Len(issues, 3, "should have 3 active channels after saving issues")
 
-	issue1.Archived = true // Mark issue1 as archived
-	issue2.Archived = true // Mark issue2 as archived
+	issue1.Archived = true  // Mark issue1 as archived
+	issue2.Archived = true  // Mark issue2 as archived
+	issue2a.Archived = true // Mark issue2a as archived
 
-	err = client.SaveIssues(ctx, issue1, issue2)
+	err = client.SaveIssues(ctx, issue1, issue2, issue2a)
 	require.NoError(err, "should not error when updating issues to archived")
 
 	// Verify that no open issues are loaded after archiving all
-	issues, err = client.LoadOpenIssues(ctx)
-	require.NoError(err, "should not error when loading open issues after archiving")
-	assert.Empty(issues, "should have 0 open issues after archiving all")
+	issues, err = client.FindActiveChannels(ctx)
+	require.NoError(err, "should not error when finding active channels after archiving")
+	assert.Len(issues, 1, "should have 1 active channel after archiving all issues in channel1 and channel2")
 }
 
 func TestLoadOpenIssuesInChannel(t *testing.T, client common.DB) {
