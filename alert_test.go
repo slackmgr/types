@@ -1068,6 +1068,200 @@ func TestAlertCleanNilElements(t *testing.T) {
 	})
 }
 
+func TestAlertCleanAdditional(t *testing.T) {
+	t.Parallel()
+
+	t.Run("checkboxInput ID and Label should be trimmed", func(t *testing.T) {
+		t.Parallel()
+
+		a := common.Alert{
+			Webhooks: []*common.Webhook{
+				{
+					ID:         "test",
+					URL:        "http://test.com",
+					ButtonText: "click",
+					CheckboxInput: []*common.WebhookCheckboxInput{
+						{ID: "  checkbox1  ", Label: "  My Label  "},
+					},
+				},
+			},
+		}
+		a.Clean()
+		assert.Equal(t, "checkbox1", a.Webhooks[0].CheckboxInput[0].ID)
+		assert.Equal(t, "My Label", a.Webhooks[0].CheckboxInput[0].Label)
+	})
+
+	t.Run("plainTextInput InitialValue should be trimmed", func(t *testing.T) {
+		t.Parallel()
+
+		a := common.Alert{
+			Webhooks: []*common.Webhook{
+				{
+					ID:         "test",
+					URL:        "http://test.com",
+					ButtonText: "click",
+					PlainTextInput: []*common.WebhookPlainTextInput{
+						{ID: "input1", Description: "desc", InitialValue: "  initial  "},
+					},
+				},
+			},
+		}
+		a.Clean()
+		assert.Equal(t, "initial", a.Webhooks[0].PlainTextInput[0].InitialValue)
+	})
+
+	t.Run("escalation severity should be trimmed and lowercased", func(t *testing.T) {
+		t.Parallel()
+
+		a := common.Alert{
+			Escalation: []*common.Escalation{
+				{DelaySeconds: 60, Severity: "  ERROR  "},
+			},
+		}
+		a.Clean()
+		assert.Equal(t, common.AlertError, a.Escalation[0].Severity)
+	})
+}
+
+func TestAlertValidationAdditional(t *testing.T) {
+	t.Parallel()
+
+	var randGen *rand.Rand
+
+	t.Run("escalation count should not exceed 3", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Escalation: []*common.Escalation{
+			{DelaySeconds: 30, Severity: common.AlertError},
+			{DelaySeconds: 60, Severity: common.AlertError},
+			{DelaySeconds: 90, Severity: common.AlertError},
+		}}
+		a.Clean()
+		require.NoError(t, a.Validate())
+
+		a = &common.Alert{Header: "a", RouteKey: "b", Escalation: []*common.Escalation{
+			{DelaySeconds: 30, Severity: common.AlertError},
+			{DelaySeconds: 60, Severity: common.AlertError},
+			{DelaySeconds: 90, Severity: common.AlertError},
+			{DelaySeconds: 120, Severity: common.AlertError},
+		}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "too many escalation points")
+	})
+
+	t.Run("initialValue should not be shorter than minLength", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Webhooks: []*common.Webhook{{
+			ID:         "foo",
+			URL:        "http://foo.bar",
+			ButtonText: "press me",
+			PlainTextInput: []*common.WebhookPlainTextInput{
+				{ID: "input1", Description: "desc", MinLength: 5, MaxLength: 100, InitialValue: "ab"},
+			},
+		}}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "initialValue cannot be shorter than minLength")
+	})
+
+	t.Run("ignoreIfTextContains count should not exceed max", func(t *testing.T) {
+		t.Parallel()
+
+		items := make([]string, common.MaxIgnoreIfTextContainsCount+1)
+		for i := range items {
+			items[i] = "item"
+		}
+		a := &common.Alert{Header: "a", RouteKey: "b", IgnoreIfTextContains: items}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "too many ignoreIfTextContains items")
+	})
+
+	t.Run("webhook ID should not exceed max length", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Webhooks: []*common.Webhook{{
+			ID:         randString(common.MaxWebhookIDLength+1, randGen),
+			URL:        "http://foo.bar",
+			ButtonText: "press me",
+		}}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "webhook[0].id is too long")
+	})
+
+	t.Run("checkbox option value should not exceed max length", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Webhooks: []*common.Webhook{{
+			ID:         "foo",
+			URL:        "http://foo.bar",
+			ButtonText: "press me",
+			CheckboxInput: []*common.WebhookCheckboxInput{{
+				ID:    "cb1",
+				Label: "label",
+				Options: []*common.WebhookCheckboxOption{
+					{Value: randString(common.MaxCheckboxOptionValueLength+1, randGen), Text: "text"},
+				},
+			}},
+		}}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "options[0].value is too long")
+	})
+
+	t.Run("nil webhook should return error in validation", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Severity: common.AlertError, Webhooks: []*common.Webhook{nil}}
+		require.ErrorContains(t, a.Validate(), "webhook[0] is nil")
+	})
+
+	t.Run("nil plainTextInput should return error in validation", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Severity: common.AlertError, Webhooks: []*common.Webhook{{
+			ID:             "foo",
+			URL:            "http://foo.bar",
+			ButtonText:     "press me",
+			PlainTextInput: []*common.WebhookPlainTextInput{nil},
+		}}}
+		require.ErrorContains(t, a.Validate(), "plainTextInput[0] is nil")
+	})
+
+	t.Run("nil checkboxInput should return error in validation", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Severity: common.AlertError, Webhooks: []*common.Webhook{{
+			ID:            "foo",
+			URL:           "http://foo.bar",
+			ButtonText:    "press me",
+			CheckboxInput: []*common.WebhookCheckboxInput{nil},
+		}}}
+		require.ErrorContains(t, a.Validate(), "checkboxInput[0] is nil")
+	})
+
+	t.Run("nil checkbox option should return error in validation", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Severity: common.AlertError, Webhooks: []*common.Webhook{{
+			ID:         "foo",
+			URL:        "http://foo.bar",
+			ButtonText: "press me",
+			CheckboxInput: []*common.WebhookCheckboxInput{{
+				ID:      "cb1",
+				Label:   "label",
+				Options: []*common.WebhookCheckboxOption{nil},
+			}},
+		}}}
+		require.ErrorContains(t, a.Validate(), "options[0] is nil")
+	})
+
+	t.Run("nil escalation should return error in validation", func(t *testing.T) {
+		t.Parallel()
+
+		a := &common.Alert{Header: "a", RouteKey: "b", Severity: common.AlertError, Escalation: []*common.Escalation{nil}}
+		require.ErrorContains(t, a.Validate(), "escalation[0] is nil")
+	})
+}
+
 var testLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 // randString generates a random string of n characters.
