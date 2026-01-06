@@ -48,8 +48,29 @@ const (
 	MaxIgnoreIfTextContainsLength = 1000
 	MaxIgnoreIfTextContainsCount  = 20
 	MaxFieldCount                 = 20
-	MaxWebhookIDLength            = 100
-	MaxCheckboxOptionValueLength  = 100
+
+	// Webhook constants
+	MaxWebhookCount                    = 5
+	MaxWebhookIDLength                 = 100
+	MaxWebhookURLLength                = 1000
+	MaxWebhookButtonTextLength         = 25
+	MaxWebhookConfirmationTextLength   = 1000
+	MaxWebhookPayloadCount             = 50
+	MaxWebhookPlainTextInputCount      = 10
+	MaxWebhookCheckboxInputCount       = 10
+	MaxWebhookInputIDLength            = 200
+	MaxWebhookInputDescriptionLength   = 200
+	MaxWebhookInputLabelLength         = 200
+	MaxWebhookInputTextLength          = 3000
+	MaxWebhookCheckboxOptionCount      = 5
+	MaxWebhookCheckboxOptionTextLength = 50
+	MaxCheckboxOptionValueLength       = 100
+
+	// Escalation constants
+	MaxEscalationCount             = 3
+	MinEscalationDelaySeconds      = 30
+	MinEscalationDelayDiffSeconds  = 30
+	MaxEscalationSlackMentionCount = 10
 )
 
 // Alert represents a single alert that can be sent to the Slack Manager.
@@ -592,8 +613,8 @@ func (a *Alert) ValidateWebhooks() error {
 		return nil
 	}
 
-	if len(a.Webhooks) > 5 {
-		return errors.New("too many webhooks, expected <=5")
+	if len(a.Webhooks) > MaxWebhookCount {
+		return fmt.Errorf("too many webhooks, expected <=%d", MaxWebhookCount)
 	}
 
 	webhookIDs := make(map[string]struct{})
@@ -621,8 +642,8 @@ func (a *Alert) ValidateWebhooks() error {
 			return fmt.Errorf("webhook[%d].url is required", index)
 		}
 
-		if len(hook.URL) > 1000 {
-			return fmt.Errorf("webhook[%d].url is too long, expected length <=1000", index)
+		if len(hook.URL) > MaxWebhookURLLength {
+			return fmt.Errorf("webhook[%d].url is too long, expected length <=%d", index, MaxWebhookURLLength)
 		}
 
 		url, err := url.ParseRequestURI(hook.URL)
@@ -638,12 +659,12 @@ func (a *Alert) ValidateWebhooks() error {
 			return fmt.Errorf("webhook[%d].buttonText is required", index)
 		}
 
-		if len(hook.ButtonText) > 25 {
-			return fmt.Errorf("webhook[%d].buttonText is too long, expected length <=25", index)
+		if len(hook.ButtonText) > MaxWebhookButtonTextLength {
+			return fmt.Errorf("webhook[%d].buttonText is too long, expected length <=%d", index, MaxWebhookButtonTextLength)
 		}
 
-		if len(hook.ConfirmationText) > 1000 {
-			return fmt.Errorf("webhook[%d].confirmationText is too long, expected length <=1000", index)
+		if len(hook.ConfirmationText) > MaxWebhookConfirmationTextLength {
+			return fmt.Errorf("webhook[%d].confirmationText is too long, expected length <=%d", index, MaxWebhookConfirmationTextLength)
 		}
 
 		if hook.ButtonStyle != "" && !WebhookButtonStyleIsValid(hook.ButtonStyle) {
@@ -658,16 +679,16 @@ func (a *Alert) ValidateWebhooks() error {
 			return fmt.Errorf("webhook[%d].displayMode '%s' is not valid, expected empty or one of [%s]", index, hook.DisplayMode, strings.Join(ValidWebhookDisplayModes(), ", "))
 		}
 
-		if len(hook.Payload) > 50 {
-			return fmt.Errorf("webhook[%d].payload item count is too large, expected <=50", index)
+		if len(hook.Payload) > MaxWebhookPayloadCount {
+			return fmt.Errorf("webhook[%d].payload item count is too large, expected <=%d", index, MaxWebhookPayloadCount)
 		}
 
-		if len(hook.PlainTextInput) > 10 {
-			return fmt.Errorf("webhook[%d].plainTextInput item count is too large, expected <=10", index)
+		if len(hook.PlainTextInput) > MaxWebhookPlainTextInputCount {
+			return fmt.Errorf("webhook[%d].plainTextInput item count is too large, expected <=%d", index, MaxWebhookPlainTextInputCount)
 		}
 
-		if len(hook.CheckboxInput) > 10 {
-			return fmt.Errorf("webhook[%d].checkboxInput item count is too large, expected <=10", index)
+		if len(hook.CheckboxInput) > MaxWebhookCheckboxInputCount {
+			return fmt.Errorf("webhook[%d].checkboxInput item count is too large, expected <=%d", index, MaxWebhookCheckboxInputCount)
 		}
 
 		inputIDs := make(map[string]struct{})
@@ -687,28 +708,28 @@ func (a *Alert) ValidateWebhooks() error {
 
 			inputIDs[input.ID] = struct{}{}
 
-			if len(input.ID) > 200 {
-				return fmt.Errorf("webhook[%d].plainTextInput[%d].id is too long, expected <=200", index, inputIndex)
+			if len(input.ID) > MaxWebhookInputIDLength {
+				return fmt.Errorf("webhook[%d].plainTextInput[%d].id is too long, expected <=%d", index, inputIndex, MaxWebhookInputIDLength)
 			}
 
-			if len(input.Description) > 200 {
-				return fmt.Errorf("webhook[%d].plainTextInput[%d].description is too long, expected <=200", index, inputIndex)
+			if len(input.Description) > MaxWebhookInputDescriptionLength {
+				return fmt.Errorf("webhook[%d].plainTextInput[%d].description is too long, expected <=%d", index, inputIndex, MaxWebhookInputDescriptionLength)
 			}
 
 			if input.MinLength < 0 {
 				return fmt.Errorf("webhook[%d].plainTextInput[%d].minLength must be >=0", index, inputIndex)
 			}
 
-			if input.MinLength > 3000 {
-				return fmt.Errorf("webhook[%d].plainTextInput[%d].minLength must be <=3000", index, inputIndex)
+			if input.MinLength > MaxWebhookInputTextLength {
+				return fmt.Errorf("webhook[%d].plainTextInput[%d].minLength must be <=%d", index, inputIndex, MaxWebhookInputTextLength)
 			}
 
 			if input.MaxLength < 0 {
 				return fmt.Errorf("webhook[%d].plainTextInput[%d].maxLength must be >=0", index, inputIndex)
 			}
 
-			if input.MaxLength > 3000 {
-				return fmt.Errorf("webhook[%d].plainTextInput[%d].maxLength must be <=3000", index, inputIndex)
+			if input.MaxLength > MaxWebhookInputTextLength {
+				return fmt.Errorf("webhook[%d].plainTextInput[%d].maxLength must be <=%d", index, inputIndex, MaxWebhookInputTextLength)
 			}
 
 			if input.MaxLength < input.MinLength {
@@ -739,16 +760,16 @@ func (a *Alert) ValidateWebhooks() error {
 
 			inputIDs[input.ID] = struct{}{}
 
-			if len(input.ID) > 200 {
-				return fmt.Errorf("webhook[%d].checkboxInput[%d].id is too long, expected <=200", index, inputIndex)
+			if len(input.ID) > MaxWebhookInputIDLength {
+				return fmt.Errorf("webhook[%d].checkboxInput[%d].id is too long, expected <=%d", index, inputIndex, MaxWebhookInputIDLength)
 			}
 
-			if len(input.Label) > 200 {
-				return fmt.Errorf("webhook[%d].checkboxInput[%d].label is too long, expected <=200", index, inputIndex)
+			if len(input.Label) > MaxWebhookInputLabelLength {
+				return fmt.Errorf("webhook[%d].checkboxInput[%d].label is too long, expected <=%d", index, inputIndex, MaxWebhookInputLabelLength)
 			}
 
-			if len(input.Options) > 5 {
-				return fmt.Errorf("webhook[%d].checkboxInput[%d].options item count is too large, expected <=5", index, inputIndex)
+			if len(input.Options) > MaxWebhookCheckboxOptionCount {
+				return fmt.Errorf("webhook[%d].checkboxInput[%d].options item count is too large, expected <=%d", index, inputIndex, MaxWebhookCheckboxOptionCount)
 			}
 
 			values := make(map[string]struct{})
@@ -772,8 +793,8 @@ func (a *Alert) ValidateWebhooks() error {
 
 				values[option.Value] = struct{}{}
 
-				if len(option.Text) > 50 {
-					return fmt.Errorf("webhook[%d].checkboxInput[%d].options[%d].text is too long, expected <=50", index, inputIndex, optionIndex)
+				if len(option.Text) > MaxWebhookCheckboxOptionTextLength {
+					return fmt.Errorf("webhook[%d].checkboxInput[%d].options[%d].text is too long, expected <=%d", index, inputIndex, optionIndex, MaxWebhookCheckboxOptionTextLength)
 				}
 			}
 		}
@@ -787,8 +808,8 @@ func (a *Alert) ValidateEscalation() error {
 		return nil
 	}
 
-	if len(a.Escalation) > 3 {
-		return errors.New("too many escalation points, expected <=3")
+	if len(a.Escalation) > MaxEscalationCount {
+		return fmt.Errorf("too many escalation points, expected <=%d", MaxEscalationCount)
 	}
 
 	previousDelay := 0
@@ -798,12 +819,12 @@ func (a *Alert) ValidateEscalation() error {
 			return fmt.Errorf("escalation[%d] is nil", index)
 		}
 
-		if e.DelaySeconds < 30 {
-			return fmt.Errorf("escalation[%d].delaySeconds '%d' is too low, expected value >=30", index, e.DelaySeconds)
+		if e.DelaySeconds < MinEscalationDelaySeconds {
+			return fmt.Errorf("escalation[%d].delaySeconds '%d' is too low, expected value >=%d", index, e.DelaySeconds, MinEscalationDelaySeconds)
 		}
 
-		if previousDelay > 0 && e.DelaySeconds-previousDelay < 30 {
-			return fmt.Errorf("escalation[%d].delaySeconds '%d' is too small compared to previous escalation, expected diff >=30", index, e.DelaySeconds)
+		if previousDelay > 0 && e.DelaySeconds-previousDelay < MinEscalationDelayDiffSeconds {
+			return fmt.Errorf("escalation[%d].delaySeconds '%d' is too small compared to previous escalation, expected diff >=%d", index, e.DelaySeconds, MinEscalationDelayDiffSeconds)
 		}
 
 		previousDelay = e.DelaySeconds
@@ -812,8 +833,8 @@ func (a *Alert) ValidateEscalation() error {
 			return fmt.Errorf("escalation[%d].severity '%s' is not valid, expected one of [panic, error, warning]", index, e.Severity)
 		}
 
-		if len(e.SlackMentions) > 10 {
-			return fmt.Errorf("escalation[%d].slackMentions item count is too large, expected <=10", index)
+		if len(e.SlackMentions) > MaxEscalationSlackMentionCount {
+			return fmt.Errorf("escalation[%d].slackMentions item count is too large, expected <=%d", index, MaxEscalationSlackMentionCount)
 		}
 
 		for j, mention := range e.SlackMentions {
