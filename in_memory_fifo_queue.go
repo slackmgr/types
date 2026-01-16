@@ -43,7 +43,8 @@ func (q *InMemoryFifoQueue) Send(ctx context.Context, slackChannelID, _, body st
 		SlackChannelID:   slackChannelID,
 		ReceiveTimestamp: time.Now(),
 		Body:             body,
-		Ack:              func(_ context.Context) {},
+		Ack:              func() {},
+		Nack:             func() {},
 	}
 
 	select {

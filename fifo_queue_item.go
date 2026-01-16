@@ -1,7 +1,6 @@
 package common
 
 import (
-	"context"
 	"time"
 )
 
@@ -21,9 +20,17 @@ type FifoQueueItem struct {
 
 	// Ack acknowledges the successful processing of the message, effectively removing it from the queue.
 	// This function cannot be nil.
-	Ack func(ctx context.Context)
+	//
+	// Ack does not accept a context parameter because acknowledgment is a commitment that must complete
+	// regardless of the caller's context state. Each queue implementation is responsible for managing
+	// its own timeouts and retry logic internally.
+	Ack func()
 
 	// Nack negatively acknowledges the processing of the message, thus making it available for reprocessing.
 	// This function cannot be nil.
-	Nack func(ctx context.Context)
+	//
+	// Nack does not accept a context parameter because negative acknowledgment is a commitment that must
+	// complete regardless of the caller's context state. Each queue implementation is responsible for
+	// managing its own timeouts and retry logic internally.
+	Nack func()
 }
