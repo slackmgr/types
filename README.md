@@ -7,6 +7,22 @@
 
 A Go shared library package providing common interfaces and data structures for the Slack Manager system. This package defines contracts for database access, logging, metrics, and core domain types like alerts and issues.
 
+## Important: When to Use This Library
+
+**Most users don't need to import this library directly.** When using the Slack Manager, this package is automatically pulled in as a dependency by other components in the ecosystem:
+
+- [Slack Manager](https://github.com/peteraglen/slack-manager) (main application)
+- [Go Client](https://github.com/peteraglen/slack-manager-go-client) (for sending alerts)
+- Database plugins ([DynamoDB](https://github.com/peteraglen/slack-manager-dynamodb-plugin), [PostgreSQL](https://github.com/peteraglen/slack-manager-postgres-plugin))
+- Messaging plugins ([SQS](https://github.com/peteraglen/slack-manager-sqs-plugin), [PubSub](https://github.com/peteraglen/slack-manager-pubsub-plugin))
+
+**You only need to import this library directly if:**
+- You're developing a **custom database plugin** (implementing the `DB` interface)
+- You're developing a **custom queue/messaging plugin**
+- You're building custom tooling that needs access to the core types
+
+For sending alerts to Slack Manager, use the [Go Client](https://github.com/peteraglen/slack-manager-go-client) instead.
+
 ## Overview
 
 The `slack-manager-common` package serves as the foundation for the Slack Manager ecosystem, providing:
