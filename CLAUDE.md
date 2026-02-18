@@ -9,6 +9,10 @@ This is `slack-manager-common`, a Go shared library package providing common int
 **Module:** `github.com/peteraglen/slack-manager-common`
 **Go Version:** 1.25
 
+## Git Conventions
+
+- Do not use the `-C` flag when running git commands directly in the repo directory, as it is not needed.
+
 ## Build Commands
 
 ```bash
@@ -38,6 +42,47 @@ If either command fails:
 3. Only commit after both pass
 
 This ensures code quality, prevents broken releases, and maintains consistency across the codebase.
+
+## Tagging and Releases
+
+### Process
+
+1. **Update `CHANGELOG.md` first** — this is MANDATORY before creating any tag.
+   - Review every commit since the last tagged commit: `git log <last-tag>..HEAD --oneline`
+   - Every commit MUST be considered and represented under the correct section (`Added`, `Changed`, `Fixed`, `Removed`)
+   - Add the new version section above `[Unreleased]` with today's date
+   - Update the comparison links at the bottom of the file
+
+2. **Commit the changelog:**
+   ```bash
+   git add CHANGELOG.md
+   git commit -m "Update CHANGELOG for vX.Y.Z"
+   ```
+
+3. **Create and push the tag:**
+   ```bash
+   git tag vX.Y.Z
+   git push origin main
+   git push origin vX.Y.Z
+   ```
+
+4. **Create the GitHub release:**
+   ```bash
+   gh release create vX.Y.Z --repo peteraglen/slack-manager-common --title "vX.Y.Z" --notes "..."
+   ```
+   Use the same content as the changelog entry for the release notes.
+
+### Versioning
+
+Follows [Semantic Versioning](https://semver.org/):
+- **Patch** (`Z`): bug fixes, CI/infra changes, documentation updates
+- **Minor** (`Y`): new backwards-compatible features or functionality
+- **Major** (`X`): breaking changes to the public API
+
+### Rules
+
+- **NEVER** create a tag without updating `CHANGELOG.md` first
+- **ALWAYS** review all commits since the last tag — do not rely on memory or summaries
 
 ## Architecture
 
