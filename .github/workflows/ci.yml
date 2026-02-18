@@ -65,7 +65,7 @@ jobs:
       uses: golangci/golangci-lint-action@v9.2.0
       with:
         version: latest
-        args: --timeout=1m --out-format=github-actions
+        args: --timeout=1m --output.formats=github-actions
 
   security:
     name: Security
