@@ -7,29 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-02-18
-
 ### Added
-- Initial public release
-- Core interfaces: DB, Logger, Metrics
-- Core domain types: Alert, Issue, MoveMapping, ChannelProcessingState
-- Alert severity levels: panic, error, warning, resolved, info
-- Comprehensive alert validation and cleaning
-- Webhook support with interactive buttons, input forms, and access control
-- Escalation system for unresolved issues
-- WebhookCallback for handling webhook responses
-- Field specifications for additional key-value pairs
-- Testing utilities: dbtests package for DB implementation testing
-- No-op implementations: NoopLogger, NoopMetrics
-- InMemoryFifoQueue for testing purposes
-- Extensive validation constants and limits
-- Package documentation and examples
+- Comprehensive README with installation, usage examples, and API documentation
+- MIT License for open source distribution
+- Package-level documentation in doc.go for godoc/pkg.go.dev
+- GitHub Actions CI workflow (testing, linting, security scanning)
+- Badges in README (pkg.go.dev, Go Report Card, license, CI status)
 
-### Security
-- All fields are validated and sanitized to prevent injection attacks
-- Maximum length limits enforced on all string fields
-- URL validation for webhooks and links
-- Slack mention and channel ID validation
+### Changed
+- Repository prepared for public open source release
 
-[Unreleased]: https://github.com/peteraglen/slack-manager-common/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/peteraglen/slack-manager-common/releases/tag/v0.1.0
+## [0.1.4] - (Previous Release)
+
+See git history for changes in v0.1.4 and earlier versions.
+
+[Unreleased]: https://github.com/peteraglen/slack-manager-common/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/peteraglen/slack-manager-common/releases/tag/v0.1.4
