@@ -10,6 +10,10 @@ permissions:
   security-events: write
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test
@@ -61,7 +65,7 @@ jobs:
       uses: golangci/golangci-lint-action@v9.2.0
       with:
         version: latest
-        args: --timeout=1m
+        args: --timeout=1m --out-format=github-actions
 
   security:
     name: Security
