@@ -22,6 +22,23 @@ Run a single test:
 go test -v -run TestFunctionName ./...
 ```
 
+## Code Quality Requirements
+
+**CRITICAL:** Before committing any changes, you MUST ensure both `make test` and `make lint` pass without errors. This applies to ALL changes, regardless of who made them (human, Claude, or other tools/linters).
+
+```bash
+# Always run before committing:
+make test    # Must pass: gosec, go fmt, go test (with race detector), go vet
+make lint    # Must pass: golangci-lint with zero issues
+```
+
+If either command fails:
+1. Fix all reported issues
+2. Re-run both commands to verify
+3. Only commit after both pass
+
+This ensures code quality, prevents broken releases, and maintains consistency across the codebase.
+
 ## Architecture
 
 ### Core Interfaces (Dependency Injection Points)

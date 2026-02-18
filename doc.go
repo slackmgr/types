@@ -60,7 +60,7 @@
 //
 // # Usage Example
 //
-//	// Create an alert
+//	// Initialize a new error-level notification
 //	alert := common.NewErrorAlert()
 //	alert.Header = "Database Connection Failed"
 //	alert.Text = "Unable to connect to production database"
