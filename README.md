@@ -430,19 +430,6 @@ The package defines extensive validation constants. Key limits include:
 
 See `alert.go` for the complete list of constants.
 
-## Build Commands
-
-```bash
-make init    # Download and clean dependencies (go mod tidy)
-make test    # Run full test suite (gosec, go fmt, go test, go vet)
-make lint    # Run golangci-lint
-```
-
-Run a specific test:
-```bash
-go test -v -run TestFunctionName ./...
-```
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
