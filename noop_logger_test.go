@@ -3,7 +3,7 @@ package common_test
 import (
 	"testing"
 
-	common "github.com/peteraglen/slack-manager-common"
+	common "github.com/slackmgr/slack-manager-common"
 )
 
 func TestNoopLogger(t *testing.T) {

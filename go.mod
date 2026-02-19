@@ -1,4 +1,4 @@
-module github.com/peteraglen/slack-manager-common
+module github.com/slackmgr/slack-manager-common
 
 go 1.25
 

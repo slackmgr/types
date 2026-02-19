@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is `slack-manager-common`, a Go shared library package providing common interfaces and data structures for the Slack Manager system. It defines contracts for database access, logging, metrics, and core domain types like alerts and issues.
 
-**Module:** `github.com/peteraglen/slack-manager-common`
+**Module:** `github.com/slackmgr/slack-manager-common`
 **Go Version:** 1.25
 
 ## Git Conventions
@@ -68,7 +68,7 @@ This ensures code quality, prevents broken releases, and maintains consistency a
 
 4. **Create the GitHub release:**
    ```bash
-   gh release create vX.Y.Z --repo peteraglen/slack-manager-common --title "vX.Y.Z" --notes "..."
+   gh release create vX.Y.Z --repo slackmgr/slack-manager-common --title "vX.Y.Z" --notes "..."
    ```
    Use the same content as the changelog entry for the release notes.
 

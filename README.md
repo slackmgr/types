@@ -1,9 +1,9 @@
 # slack-manager-common
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/peteraglen/slack-manager-common.svg)](https://pkg.go.dev/github.com/peteraglen/slack-manager-common)
-[![Go Report Card](https://goreportcard.com/badge/github.com/peteraglen/slack-manager-common)](https://goreportcard.com/report/github.com/peteraglen/slack-manager-common)
+[![Go Reference](https://pkg.go.dev/badge/github.com/slackmgr/slack-manager-common.svg)](https://pkg.go.dev/github.com/slackmgr/slack-manager-common)
+[![Go Report Card](https://goreportcard.com/badge/github.com/slackmgr/slack-manager-common)](https://goreportcard.com/report/github.com/slackmgr/slack-manager-common)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/peteraglen/slack-manager-common/workflows/CI/badge.svg)](https://github.com/peteraglen/slack-manager-common/actions)
+[![CI](https://github.com/slackmgr/slack-manager-common/workflows/CI/badge.svg)](https://github.com/slackmgr/slack-manager-common/actions)
 
 A Go shared library package providing common interfaces and data structures for the Slack Manager system. This package defines contracts for database access, logging, metrics, and core domain types like alerts and issues.
 
@@ -11,17 +11,17 @@ A Go shared library package providing common interfaces and data structures for 
 
 **Most users don't need to import this library directly.** When using the Slack Manager, this package is automatically pulled in as a dependency by other components in the ecosystem:
 
-- [Slack Manager](https://github.com/peteraglen/slack-manager) (main application)
-- [Go Client](https://github.com/peteraglen/slack-manager-go-client) (for sending alerts)
-- Database plugins ([DynamoDB](https://github.com/peteraglen/slack-manager-dynamodb-plugin), [PostgreSQL](https://github.com/peteraglen/slack-manager-postgres-plugin))
-- Messaging plugins ([SQS](https://github.com/peteraglen/slack-manager-sqs-plugin), [PubSub](https://github.com/peteraglen/slack-manager-pubsub-plugin))
+- [Slack Manager](https://github.com/slackmgr/slack-manager) (main application)
+- [Go Client](https://github.com/slackmgr/slack-manager-go-client) (for sending alerts)
+- Database plugins ([DynamoDB](https://github.com/slackmgr/slack-manager-dynamodb-plugin), [PostgreSQL](https://github.com/slackmgr/slack-manager-postgres-plugin))
+- Messaging plugins ([SQS](https://github.com/slackmgr/slack-manager-sqs-plugin), [PubSub](https://github.com/slackmgr/slack-manager-pubsub-plugin))
 
 **You only need to import this library directly if:**
 - You're developing a **custom database plugin** (implementing the `DB` interface)
 - You're developing a **custom queue/messaging plugin**
 - You're building custom tooling that needs access to the core types
 
-For sending alerts to Slack Manager, use the [Go Client](https://github.com/peteraglen/slack-manager-go-client) instead.
+For sending alerts to Slack Manager, use the [Go Client](https://github.com/slackmgr/slack-manager-go-client) instead.
 
 ## Overview
 
@@ -32,12 +32,12 @@ The `slack-manager-common` package serves as the foundation for the Slack Manage
 - **Validation & Cleaning**: Built-in validation and normalization for all data structures
 - **Type Safety**: Strongly-typed enums for severities, access levels, button styles, and display modes
 
-This library is used by the main [Slack Manager](https://github.com/peteraglen/slack-manager) application, database plugins ([DynamoDB](https://github.com/peteraglen/slack-manager-dynamodb-plugin), [PostgreSQL](https://github.com/peteraglen/slack-manager-postgres-plugin)), messaging plugins ([SQS](https://github.com/peteraglen/slack-manager-sqs-plugin), [PubSub](https://github.com/peteraglen/slack-manager-pubsub-plugin)), and the [Go client](https://github.com/peteraglen/slack-manager-go-client).
+This library is used by the main [Slack Manager](https://github.com/slackmgr/slack-manager) application, database plugins ([DynamoDB](https://github.com/slackmgr/slack-manager-dynamodb-plugin), [PostgreSQL](https://github.com/slackmgr/slack-manager-postgres-plugin)), messaging plugins ([SQS](https://github.com/slackmgr/slack-manager-sqs-plugin), [PubSub](https://github.com/slackmgr/slack-manager-pubsub-plugin)), and the [Go client](https://github.com/slackmgr/slack-manager-go-client).
 
 ## Installation
 
 ```bash
-go get github.com/peteraglen/slack-manager-common
+go get github.com/slackmgr/slack-manager-common
 ```
 
 ## Core Interfaces
@@ -334,7 +334,7 @@ Maximum 20 fields per alert.
 The `dbtests` package provides a shared test suite that can be run against any `DB` implementation:
 
 ```go
-import "github.com/peteraglen/slack-manager-common/dbtests"
+import "github.com/slackmgr/slack-manager-common/dbtests"
 
 // In your database implementation tests:
 func TestDatabaseCompliance(t *testing.T) {
@@ -359,7 +359,7 @@ For testing purposes, no-op implementations are provided:
 package main
 
 import (
-    "github.com/peteraglen/slack-manager-common"
+    "github.com/slackmgr/slack-manager-common"
 )
 
 func main() {

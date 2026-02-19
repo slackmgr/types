@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	common "github.com/peteraglen/slack-manager-common"
+	common "github.com/slackmgr/slack-manager-common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
