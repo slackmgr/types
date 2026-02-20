@@ -9,10 +9,6 @@ This is `types`, a Go shared library package providing common interfaces and dat
 **Module:** `github.com/slackmgr/types`
 **Go Version:** 1.25
 
-## Git Conventions
-
-- Do not use the `-C` flag when running git commands directly in the repo directory, as it is not needed.
-
 ## Build Commands
 
 ```bash
@@ -42,6 +38,10 @@ If either command fails:
 3. Only commit after both pass
 
 This ensures code quality, prevents broken releases, and maintains consistency across the codebase.
+
+## Keeping README.md in Sync
+
+After every code change, check whether `README.md` needs updating. The README is the public-facing documentation and must always reflect the actual code.
 
 ## Tagging and Releases
 
