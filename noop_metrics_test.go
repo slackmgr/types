@@ -16,8 +16,9 @@ func TestNoopMetrics(t *testing.T) {
 	m.RegisterCounter("", "")
 	m.RegisterGauge("", "")
 	m.RegisterHistogram("", "", []float64{})
-	m.Add("", 0)
-	m.Inc("", "")
-	m.Set("", 0)
+	m.CounterAdd("", 0)
+	m.CounterInc("", "")
+	m.GaugeSet("", 0)
+	m.GaugeAdd("", 0)
 	m.Observe("", 0)
 }

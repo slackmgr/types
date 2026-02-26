@@ -10,14 +10,18 @@ type Metrics interface {
 	// RegisterHistogram registers a histogram metric with the given name, help text, buckets, and optional labels.
 	RegisterHistogram(name, help string, buckets []float64, labels ...string)
 
-	// Add adds the given value to the specified counter metric, with optional label values.
-	Add(name string, value float64, labelValues ...string)
+	// CounterAdd adds the given value to the specified counter metric, with optional label values.
+	CounterAdd(name string, value float64, labelValues ...string)
 
-	// Inc increments the specified counter metric by 1, with optional label values.
-	Inc(name string, labelValues ...string)
+	// CounterInc increments the specified counter metric by 1, with optional label values.
+	CounterInc(name string, labelValues ...string)
 
-	// Set sets the specified gauge metric to the given value, with optional label values.
-	Set(name string, value float64, labelValues ...string)
+	// GaugeSet sets the specified gauge metric to the given value, with optional label values.
+	GaugeSet(name string, value float64, labelValues ...string)
+
+	// GaugeAdd adds the given value to the specified gauge metric, with optional label values.
+	// Use a negative value to subtract.
+	GaugeAdd(name string, value float64, labelValues ...string)
 
 	// Observe records an observation for the specified histogram metric, with optional label values.
 	Observe(name string, value float64, labelValues ...string)

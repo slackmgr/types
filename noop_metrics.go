@@ -13,13 +13,16 @@ func (m *NoopMetrics) RegisterGauge(_, _ string, _ ...string) {
 func (m *NoopMetrics) RegisterHistogram(_, _ string, _ []float64, _ ...string) {
 }
 
-func (m *NoopMetrics) Add(_ string, _ float64, _ ...string) {
+func (m *NoopMetrics) CounterAdd(_ string, _ float64, _ ...string) {
 }
 
-func (m *NoopMetrics) Inc(_ string, _ ...string) {
+func (m *NoopMetrics) CounterInc(_ string, _ ...string) {
 }
 
-func (m *NoopMetrics) Set(_ string, _ float64, _ ...string) {
+func (m *NoopMetrics) GaugeSet(_ string, _ float64, _ ...string) {
+}
+
+func (m *NoopMetrics) GaugeAdd(_ string, _ float64, _ ...string) {
 }
 
 func (m *NoopMetrics) Observe(_ string, _ float64, _ ...string) {
