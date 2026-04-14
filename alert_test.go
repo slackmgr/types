@@ -270,6 +270,16 @@ func TestAlertClean(t *testing.T) {
 		assert.Equal(t, types.AlertError, a.Severity)
 	})
 
+	t.Run("severity aliases should be converted to 'resolved'", func(t *testing.T) {
+		t.Parallel()
+
+		for _, alias := range []types.AlertSeverity{"resolve", "recovered", "recover"} {
+			a := types.Alert{Severity: alias}
+			a.Clean()
+			assert.Equal(t, types.AlertResolved, a.Severity, "expected severity alias %q to be converted to 'resolved'", alias)
+		}
+	})
+
 	t.Run("negative archivingDelaySeconds should be set to 0", func(t *testing.T) {
 		t.Parallel()
 

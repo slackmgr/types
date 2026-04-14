@@ -460,7 +460,7 @@ func (a *Alert) UniqueID() string {
 }
 
 // Clean normalizes and sanitizes all alert fields.
-// It trims whitespace, normalizes case where appropriate, truncates fields that exceed maximum lengths,
+// It trims whitespace, normalizes case where appropriate, truncates certain fields that exceed maximum lengths,
 // and applies default values for empty or invalid fields (e.g., sets Severity to 'error' if empty).
 // This method should be called before validation to ensure consistent data.
 func (a *Alert) Clean() {
@@ -468,30 +468,54 @@ func (a *Alert) Clean() {
 		a.Timestamp = time.Now()
 	}
 
+	a.CorrelationID = strings.TrimSpace(a.CorrelationID)
+
 	a.Type = strings.ToLower(strings.TrimSpace(a.Type))
+
 	a.SlackChannelID = strings.ToUpper(strings.TrimSpace(a.SlackChannelID))
+
 	a.RouteKey = strings.ToLower(strings.TrimSpace(a.RouteKey))
+
 	a.Header = strings.ReplaceAll(strings.TrimSpace(a.Header), "\n", " ")
+	a.Header = truncateStringIfNeeded(a.Header, MaxHeaderLength)
+
 	a.HeaderWhenResolved = strings.ReplaceAll(strings.TrimSpace(a.HeaderWhenResolved), "\n", " ")
+	a.HeaderWhenResolved = truncateStringIfNeeded(a.HeaderWhenResolved, MaxHeaderLength)
+
 	a.Text = strings.TrimSpace(a.Text)
+	a.Text = shortenAlertTextIfNeeded(a.Text)
+
 	a.TextWhenResolved = strings.TrimSpace(a.TextWhenResolved)
+	a.TextWhenResolved = shortenAlertTextIfNeeded(a.TextWhenResolved)
+
 	a.FallbackText = strings.TrimSpace(strings.ReplaceAll(a.FallbackText, ":status:", ""))
 	a.FallbackText = strings.ReplaceAll(a.FallbackText, "\n", " ")
-	a.CorrelationID = strings.TrimSpace(a.CorrelationID)
-	a.Username = strings.TrimSpace(a.Username)
-	a.Author = strings.TrimSpace(a.Author)
-	a.Host = strings.TrimSpace(a.Host)
-	a.Link = strings.TrimSpace(a.Link)
-	a.Footer = strings.TrimSpace(a.Footer)
-	a.IconEmoji = strings.ToLower(strings.TrimSpace(a.IconEmoji))
-	a.Severity = AlertSeverity(strings.ToLower(strings.TrimSpace(string(a.Severity))))
+	a.FallbackText = truncateStringIfNeeded(a.FallbackText, MaxFallbackTextLength)
 
-	if utf8.RuneCountInString(a.FallbackText) > MaxFallbackTextLength {
-		a.FallbackText = truncateString(a.FallbackText, MaxFallbackTextLength-3) + "..."
-	}
+	a.Username = strings.TrimSpace(a.Username)
+	a.Username = truncateStringIfNeeded(a.Username, MaxUsernameLength)
+
+	a.Author = strings.TrimSpace(a.Author)
+	a.Author = truncateStringIfNeeded(a.Author, MaxAuthorLength)
+
+	a.Host = strings.TrimSpace(a.Host)
+	a.Host = truncateStringIfNeeded(a.Host, MaxHostLength)
+
+	a.Link = strings.TrimSpace(a.Link)
+
+	a.Footer = strings.TrimSpace(a.Footer)
+	a.Footer = truncateStringIfNeeded(a.Footer, MaxFooterLength)
+
+	a.IconEmoji = strings.ToLower(strings.TrimSpace(a.IconEmoji))
+
+	a.Severity = AlertSeverity(strings.ToLower(strings.TrimSpace(string(a.Severity))))
 
 	if a.Severity == "" || a.Severity == "critical" {
 		a.Severity = AlertError
+	}
+
+	if a.Severity == "resolve" || a.Severity == "recovered" || a.Severity == "recover" {
+		a.Severity = AlertResolved
 	}
 
 	if a.ArchivingDelaySeconds < 0 {
@@ -502,50 +526,16 @@ func (a *Alert) Clean() {
 		a.NotificationDelaySeconds = 0
 	}
 
-	// Max length in the Slack API is 150, see https://api.slack.com/reference/block-kit/blocks#header
-	// We also need to leave some space for the :status: emoji to be replaced with something a bit longer by the Slack Manager
-	if utf8.RuneCountInString(a.Header) > MaxHeaderLength {
-		a.Header = strings.TrimSpace(truncateString(a.Header, MaxHeaderLength-3)) + "..."
-	}
-
-	if utf8.RuneCountInString(a.HeaderWhenResolved) > MaxHeaderLength {
-		a.HeaderWhenResolved = strings.TrimSpace(truncateString(a.HeaderWhenResolved, MaxHeaderLength-3)) + "..."
-	}
-
-	a.Text = shortenAlertTextIfNeeded(a.Text)
-	a.TextWhenResolved = shortenAlertTextIfNeeded(a.TextWhenResolved)
-
-	if utf8.RuneCountInString(a.Author) > MaxAuthorLength {
-		a.Author = strings.TrimSpace(truncateString(a.Author, MaxAuthorLength-3)) + "..."
-	}
-
-	if utf8.RuneCountInString(a.Host) > MaxHostLength {
-		a.Host = strings.TrimSpace(truncateString(a.Host, MaxHostLength-3)) + "..."
-	}
-
-	if utf8.RuneCountInString(a.Username) > MaxUsernameLength {
-		a.Username = strings.TrimSpace(truncateString(a.Username, MaxUsernameLength-3)) + "..."
-	}
-
-	if utf8.RuneCountInString(a.Footer) > MaxFooterLength {
-		a.Footer = strings.TrimSpace(truncateString(a.Footer, MaxFooterLength-3)) + "..."
-	}
-
 	for _, field := range a.Fields {
 		if field == nil {
 			continue
 		}
 
 		field.Title = strings.TrimSpace(field.Title)
+		field.Title = truncateStringIfNeeded(field.Title, MaxFieldTitleLength)
+
 		field.Value = strings.TrimSpace(field.Value)
-
-		if utf8.RuneCountInString(field.Title) > MaxFieldTitleLength {
-			field.Title = strings.TrimSpace(truncateString(field.Title, MaxFieldTitleLength-3)) + "..."
-		}
-
-		if utf8.RuneCountInString(field.Value) > MaxFieldValueLength {
-			field.Value = strings.TrimSpace(truncateString(field.Value, MaxFieldValueLength-3)) + "..."
-		}
+		field.Value = truncateStringIfNeeded(field.Value, MaxFieldValueLength)
 	}
 
 	for _, hook := range a.Webhooks {
@@ -1055,6 +1045,17 @@ func shortenAlertTextIfNeeded(text string) string {
 	return strings.TrimSpace(truncateString(text, MaxTextLength-3)) + "..."
 }
 
+// truncateStringIfNeeded truncates s to maxLen runes if it exceeds that limit, appending "...".
+// Trailing whitespace is trimmed from the truncated portion before appending.
+// If s is within maxLen runes, it is returned unchanged.
+func truncateStringIfNeeded(s string, maxLen int) string {
+	if utf8.RuneCountInString(s) <= maxLen {
+		return s
+	}
+
+	return strings.TrimSpace(truncateString(s, maxLen-3)) + "..."
+}
+
 // truncateString truncates a string to maxRunes runes, safely handling multi-byte UTF-8 characters.
 func truncateString(s string, maxRunes int) string {
 	if utf8.RuneCountInString(s) <= maxRunes {
@@ -1062,6 +1063,7 @@ func truncateString(s string, maxRunes int) string {
 	}
 
 	runes := []rune(s)
+
 	return string(runes[:maxRunes])
 }
 
