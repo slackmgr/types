@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-04-14
+
+### Changed
+- Refactor `Clean()`: extract `truncateStringIfNeeded` helper to eliminate repetition
+- `Clean()` now normalises severity aliases `"resolve"`, `"recovered"`, and `"recover"` to `AlertResolved`
+
 ## [0.4.0] - 2026-02-26
 
 ### Changed
@@ -71,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/slackmgr/types/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/slackmgr/types/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/slackmgr/types/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/slackmgr/types/compare/v0.2.2...v0.3.0
