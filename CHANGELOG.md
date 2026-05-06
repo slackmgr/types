@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-06
+
+### Changed
+- `WebhookCallback.Input` renamed to `PlainTextInput`; JSON tag changed from `"input"` to `"plainTextInput"` (**breaking** — consumers must update field references and any JSON deserialization)
+- Fix incorrect and incomplete godoc comments on `Alert` fields: `CorrelationID` hash order, `HeaderWhenResolved`/`TextWhenResolved` state description, `IssueFollowUpEnabled` fire-and-forget behavior, `AutoResolveAsInconclusive` conditions, `NotificationDelaySeconds` dependency on `IssueFollowUpEnabled`, `IgnoreIfTextContains` case-sensitivity and field scope, `Webhook.Payload`/`PlainTextInput`/`CheckboxInput`
+- Add struct-level and field-level godoc to `WebhookCallback`
+
 ## [0.4.1] - 2026-04-14
 
 ### Changed
@@ -77,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/slackmgr/types/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/slackmgr/types/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/slackmgr/types/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/slackmgr/types/compare/v0.3.0...v0.3.1
