@@ -2,16 +2,37 @@ package types
 
 import "time"
 
+// WebhookCallback is the payload sent via HTTP POST to the webhook URL when a user clicks a webhook button.
 type WebhookCallback struct {
-	ID            string              `json:"id"`
-	UserID        string              `json:"userId"`
-	UserRealName  string              `json:"userRealName"`
-	ChannelID     string              `json:"channelId"`
-	MessageID     string              `json:"messageId"`
-	Timestamp     time.Time           `json:"timestamp"`
-	Input         map[string]string   `json:"input"`
+	// ID is the webhook ID from the originating Webhook definition.
+	ID string `json:"id"`
+
+	// UserID is the Slack user ID of the user who clicked the button.
+	UserID string `json:"userId"`
+
+	// UserRealName is the display name of the user who clicked the button.
+	UserRealName string `json:"userRealName"`
+
+	// ChannelID is the Slack channel ID where the button was clicked.
+	ChannelID string `json:"channelId"`
+
+	// MessageID is the Slack message timestamp (ts) of the post that contained the button.
+	MessageID string `json:"messageId"`
+
+	// Timestamp is the time when the webhook was triggered.
+	Timestamp time.Time `json:"timestamp"`
+
+	// PlainTextInput contains the values entered by the user in the webhook's PlainTextInput fields,
+	// keyed by each input's ID.
+	PlainTextInput map[string]string `json:"plainTextInput"`
+
+	// CheckboxInput contains the selected option values from the webhook's CheckboxInput groups,
+	// keyed by each input's ID. Each value is the list of selected option values.
 	CheckboxInput map[string][]string `json:"checkboxInput"`
-	Payload       map[string]any      `json:"payload"`
+
+	// Payload contains the static key-value pairs from the originating Webhook.Payload definition.
+	// These values are set at alert creation time and are not modified by user interaction.
+	Payload map[string]any `json:"payload"`
 }
 
 func (w *WebhookCallback) GetPayloadValue(key string) any {
@@ -69,11 +90,11 @@ func (w *WebhookCallback) GetPayloadBool(key string, defaultValue bool) bool {
 }
 
 func (w *WebhookCallback) GetInputValue(key string) string {
-	if w == nil || w.Input == nil {
+	if w == nil || w.PlainTextInput == nil {
 		return ""
 	}
 
-	if s, ok := w.Input[key]; ok {
+	if s, ok := w.PlainTextInput[key]; ok {
 		return s
 	}
 

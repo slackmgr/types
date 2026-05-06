@@ -135,7 +135,7 @@ type Alert struct {
 	Timestamp time.Time `json:"timestamp"`
 
 	// CorrelationID is an optional field used to group related alerts together in issues.
-	// If unset, the correlation ID is constructed by hashing [Header, Text, Author, Host, SlackChannelID].
+	// If unset, the correlation ID is constructed by hashing [Header, Author, Host, Text, SlackChannelID].
 	// It is strongly recommended to set this to an explicit value, which makes sense in your context, rather than relying on the default hash value.
 	// With a custom correlation ID, you can update both header and text without creating a new issue.
 	CorrelationID string `json:"correlationId"`
@@ -151,7 +151,7 @@ type Alert struct {
 	// This field is optional, but Header and Text cannot both be empty.
 	Header string `json:"header"`
 
-	// HeaderWhenResolved is the main header (title) of the issue when in the *resolved* state.
+	// HeaderWhenResolved is the main header (title) of the issue when in a resolved or info state.
 	// It is automatically truncated at MaxHeaderLength characters.
 	// This field is optional. If unset, the Header field is used for all issue states.
 	HeaderWhenResolved string `json:"headerWhenResolved"`
@@ -162,7 +162,7 @@ type Alert struct {
 	// This field is optional, but Header and Text cannot both be empty.
 	Text string `json:"text"`
 
-	// TextWhenResolved is the main text (body) of the alert when in the *resolved* state.
+	// TextWhenResolved is the main text (body) of the alert when in a resolved or info state.
 	// It is automatically truncated at MaxTextLength characters.
 	// This field is optional. If unset, the Text field is used for all issue states.
 	TextWhenResolved string `json:"textWhenResolved"`
@@ -192,9 +192,12 @@ type Alert struct {
 	// This field is optional, but if set, it must be a valid absolute URL, starting with http:// or https://
 	Link string `json:"link"`
 
-	// IssueFollowUpEnabled is a flag that determines if the issue should be automatically resolved after a certain time.
-	// If set to true, the issue will be resolved after AutoResolveSeconds seconds.
-	// Set to false for fire-and-forget alerts, where no follow-up is needed (i.e. no issue tracking).
+	// IssueFollowUpEnabled controls whether the issue is tracked after the initial Slack post.
+	// If true, the issue will be automatically resolved after AutoResolveSeconds seconds (or immediately if severity is 'resolved').
+	// Users can also manually resolve, investigate, or mute the issue via Slack reactions.
+	// If false, a Slack post is still created, but the issue is automatically archived approximately 30 seconds after
+	// the last alert and cannot be resolved or investigated. This is suitable for fire-and-forget notifications.
+	// Note: if true and severity is 'info', follow-up is silently disabled (info alerts are inherently fire-and-forget).
 	IssueFollowUpEnabled bool `json:"issueFollowUpEnabled"`
 
 	// AutoResolveSeconds is the number of seconds after which the issue should be automatically resolved, if IssueFollowUpEnabled is true.
@@ -202,7 +205,8 @@ type Alert struct {
 	AutoResolveSeconds int `json:"autoResolveSeconds"`
 
 	// AutoResolveAsInconclusive is a flag that determines if the issue should be automatically resolved as 'inconclusive' instead of 'resolved'.
-	// This affects the which emoji is used in the Slack post.
+	// This affects which emoji is used in the Slack post when the issue is auto-resolved.
+	// It has no effect if the issue was manually resolved via a Slack reaction, or if severity is 'resolved' or 'info'.
 	// The default value is false, which means the issue is resolved with status 'resolved'.
 	AutoResolveAsInconclusive bool `json:"autoResolveAsInconclusive"`
 
@@ -240,6 +244,7 @@ type Alert struct {
 	// NotificationDelaySeconds is the number of seconds to wait before creating an actual Slack post.
 	// If the issue is resolved before the delay is over, no Slack post is created for the issue.
 	// This is useful for issues that may be resolved quickly, to avoid unnecessary notifications.
+	// This field only takes effect when IssueFollowUpEnabled is true.
 	NotificationDelaySeconds int `json:"notificationDelaySeconds"`
 
 	// ArchivingDelaySeconds is the number of seconds to wait before archiving the issue, after it is resolved.
@@ -253,7 +258,8 @@ type Alert struct {
 	// Maximum of MaxEscalationCount escalations allowed.
 	Escalation []*Escalation `json:"escalation"`
 
-	// IgnoreIfTextContains is a list of substrings that, if found in the alert text, will cause the alert to be ignored.
+	// IgnoreIfTextContains is a list of substrings that, if found in the alert's Text field, will cause the alert to be dropped.
+	// Matching is case-insensitive. Only the Text field is checked; Header and other fields are not.
 	// This is useful for filtering out known noise or false positives.
 	// Maximum of MaxIgnoreIfTextContainsCount items, each up to MaxIgnoreIfTextContainsLength characters.
 	IgnoreIfTextContains []string `json:"ignoreIfTextContains"`
@@ -265,7 +271,6 @@ type Alert struct {
 	Webhooks []*Webhook `json:"webhooks"`
 
 	// Metadata is an arbitrary key-value map for storing custom data with the alert.
-	// This data is passed through to webhook payloads and can be used for tracking or correlation purposes.
 	// The Slack Manager does not interpret this data.
 	Metadata map[string]any `json:"metadata"`
 
@@ -340,18 +345,18 @@ type Webhook struct {
 	// If empty, the button is always visible.
 	DisplayMode WebhookDisplayMode `json:"displayMode"`
 
-	// Payload is a map of key-value pairs sent in the HTTP POST body when the webhook is triggered.
-	// Alert metadata and input values are merged into this payload.
+	// Payload is a map of static key-value pairs sent back in WebhookCallback.Payload when the webhook fires.
+	// This data is defined at alert creation time and is not modified at runtime.
 	// Maximum of MaxWebhookPayloadCount items.
 	Payload map[string]any `json:"payload"`
 
-	// PlainTextInput defines text input fields shown in the webhook's modal dialog.
-	// User-entered values are included in the webhook payload.
+	// PlainTextInput defines text input fields shown in the webhook's modal dialog before the webhook fires.
+	// User-entered values are sent back in WebhookCallback.PlainTextInput, keyed by each input's ID.
 	// Maximum of MaxWebhookPlainTextInputCount inputs.
 	PlainTextInput []*WebhookPlainTextInput `json:"plainTextInput"`
 
-	// CheckboxInput defines checkbox groups shown in the webhook's modal dialog.
-	// Selected values are included in the webhook payload.
+	// CheckboxInput defines checkbox groups shown in the webhook's modal dialog before the webhook fires.
+	// Selected option values are sent back in WebhookCallback.CheckboxInput, keyed by each input's ID.
 	// Maximum of MaxWebhookCheckboxInputCount inputs.
 	CheckboxInput []*WebhookCheckboxInput `json:"checkboxInput"`
 }

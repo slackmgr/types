@@ -111,7 +111,7 @@ func TestWebhookGetInputValue(t *testing.T) {
 	assert.Empty(t, val)
 
 	w = &types.WebhookCallback{
-		Input: map[string]string{
+		PlainTextInput: map[string]string{
 			"key": "value",
 		},
 	}
