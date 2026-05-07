@@ -415,18 +415,32 @@ func TestAlertClean(t *testing.T) {
 		assert.Equal(t, "bar", a.Webhooks[0].PlainTextInput[0].Description)
 	})
 
-	t.Run("webhook button style 'default' should be replaced with empty string", func(t *testing.T) {
+	t.Run("empty webhook button style should be replaced with 'default' style", func(t *testing.T) {
 		t.Parallel()
 
 		a := types.Alert{
 			Webhooks: []*types.Webhook{
 				{
-					ButtonStyle: "default",
+					ButtonStyle: "",
 				},
 			},
 		}
 		a.Clean()
-		assert.Equal(t, types.WebhookButtonStyle(""), a.Webhooks[0].ButtonStyle)
+		assert.Equal(t, types.WebhookButtonStyleDefault, a.Webhooks[0].ButtonStyle)
+	})
+
+	t.Run("empty webhook access level should be replaced with 'global_admins'", func(t *testing.T) {
+		t.Parallel()
+
+		a := types.Alert{
+			Webhooks: []*types.Webhook{
+				{
+					AccessLevel: "",
+				},
+			},
+		}
+		a.Clean()
+		assert.Equal(t, types.WebhookAccessLevelGlobalAdmins, a.Webhooks[0].AccessLevel)
 	})
 
 	t.Run("alert escalation should be sorted by delay seconds", func(t *testing.T) {

@@ -320,8 +320,9 @@ type Webhook struct {
 	// Maximum length: MaxWebhookURLLength characters.
 	URL string `json:"url"`
 
-	// ConfirmationText is the text displayed in a confirmation dialog before triggering the webhook.
-	// If empty, no confirmation dialog is shown and the webhook is triggered immediately.
+	// ConfirmationText is the text displayed as the header of the confirmation dialog
+	// shown before triggering the webhook.
+	// If empty, a default header referencing the webhook URL is used.
 	// Maximum length: MaxWebhookConfirmationTextLength characters.
 	ConfirmationText string `json:"confirmationText"`
 
@@ -332,17 +333,17 @@ type Webhook struct {
 
 	// ButtonStyle determines the visual appearance of the button in Slack.
 	// Valid values are defined by WebhookButtonStyle constants.
-	// If empty, the default Slack button style is used.
+	// If empty, defaults to WebhookButtonStyleDefault.
 	ButtonStyle WebhookButtonStyle `json:"buttonStyle"`
 
 	// AccessLevel controls who can click this webhook button.
 	// Valid values are defined by WebhookAccessLevel constants.
-	// If empty, anyone in the channel can trigger the webhook.
+	// If empty, defaults to WebhookAccessLevelGlobalAdmins.
 	AccessLevel WebhookAccessLevel `json:"accessLevel"`
 
 	// DisplayMode controls when the webhook button is visible.
 	// Valid values are defined by WebhookDisplayMode constants.
-	// If empty, the button is always visible.
+	// If empty, behaves like WebhookDisplayModeOpenIssue (hidden when the issue is resolved).
 	DisplayMode WebhookDisplayMode `json:"displayMode"`
 
 	// Payload is a map of static key-value pairs sent back in WebhookCallback.Payload when the webhook fires.
@@ -362,11 +363,11 @@ type Webhook struct {
 }
 
 // WebhookPlainTextInput represents a text input field in a webhook's modal dialog.
-// The user's input is included in the webhook payload with the field ID as the key.
+// The user's input is sent back in WebhookCallback.PlainTextInput, keyed by the field ID.
 type WebhookPlainTextInput struct {
 	// ID is the unique identifier for this input field.
 	// It must be unique among all inputs (both text and checkbox) in the same webhook.
-	// The ID is used as the key in the webhook payload.
+	// The ID is used as the key in WebhookCallback.PlainTextInput.
 	// Maximum length: MaxWebhookInputIDLength characters.
 	ID string `json:"id"`
 
@@ -392,11 +393,11 @@ type WebhookPlainTextInput struct {
 }
 
 // WebhookCheckboxInput represents a group of checkboxes in a webhook's modal dialog.
-// Selected option values are included in the webhook payload as an array with the field ID as the key.
+// Selected option values are sent back in WebhookCallback.CheckboxInput as an array, keyed by the field ID.
 type WebhookCheckboxInput struct {
 	// ID is the unique identifier for this checkbox group.
 	// It must be unique among all inputs (both text and checkbox) in the same webhook.
-	// The ID is used as the key in the webhook payload.
+	// The ID is used as the key in WebhookCallback.CheckboxInput.
 	// Maximum length: MaxWebhookInputIDLength characters.
 	ID string `json:"id"`
 
@@ -411,7 +412,7 @@ type WebhookCheckboxInput struct {
 
 // WebhookCheckboxOption represents a single checkbox option within a WebhookCheckboxInput.
 type WebhookCheckboxOption struct {
-	// Value is the value included in the webhook payload when this option is selected.
+	// Value is the value included in WebhookCallback.CheckboxInput when this option is selected.
 	// Must be unique among all options in the same checkbox group.
 	// Maximum length: MaxCheckboxOptionValueLength characters.
 	Value string `json:"value"`
@@ -553,8 +554,12 @@ func (a *Alert) Clean() {
 		hook.URL = strings.TrimSpace(hook.URL)
 		hook.ConfirmationText = strings.TrimSpace(hook.ConfirmationText)
 
-		if hook.ButtonStyle == "default" {
-			hook.ButtonStyle = ""
+		if hook.ButtonStyle == "" {
+			hook.ButtonStyle = WebhookButtonStyleDefault
+		}
+
+		if hook.AccessLevel == "" {
+			hook.AccessLevel = WebhookAccessLevelGlobalAdmins
 		}
 
 		for _, input := range hook.PlainTextInput {
