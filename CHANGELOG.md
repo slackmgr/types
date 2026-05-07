@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-05-07
+
+### Changed
+- Fix incorrect godoc on `Webhook.ConfirmationText`, `AccessLevel`, `DisplayMode`, and on `WebhookPlainTextInput`/`WebhookCheckboxInput`/`WebhookCheckboxOption` (replace ambiguous "webhook payload" wording with the correct `WebhookCallback` field references)
+- `Clean()` now defaults empty `Webhook.ButtonStyle` to `WebhookButtonStyleDefault` and empty `Webhook.AccessLevel` to `WebhookAccessLevelGlobalAdmins` (previously `Clean()` normalised `"default"` to empty string for `ButtonStyle`)
+- `WebhookButtonStyleDefault` is now an exported constant and accepted as a valid style
+- Clarify that `WebhookAccessLevelChannelAdmins`/`ChannelMembers` include higher access levels
+
 ## [0.5.0] - 2026-05-06
 
 ### Changed
@@ -84,7 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/slackmgr/types/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/slackmgr/types/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/slackmgr/types/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/slackmgr/types/compare/v0.3.1...v0.4.0
