@@ -1204,21 +1204,6 @@ func TestAlertValidationAdditional(t *testing.T) {
 		require.ErrorContains(t, a.Validate(), "too many escalation points")
 	})
 
-	t.Run("initialValue should not be shorter than minLength", func(t *testing.T) {
-		t.Parallel()
-
-		a := &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{
-			ID:         "foo",
-			URL:        "http://foo.bar",
-			ButtonText: "press me",
-			PlainTextInput: []*types.WebhookPlainTextInput{
-				{ID: "input1", Description: "desc", MinLength: 5, MaxLength: 100, InitialValue: "ab"},
-			},
-		}}}
-		a.Clean()
-		require.ErrorContains(t, a.Validate(), "initialValue cannot be shorter than minLength")
-	})
-
 	t.Run("ignoreIfTextContains count should not exceed max", func(t *testing.T) {
 		t.Parallel()
 

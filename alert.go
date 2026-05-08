@@ -924,10 +924,6 @@ func (a *Alert) ValidateWebhooks() error {
 			if len(input.InitialValue) > input.MaxLength {
 				return fmt.Errorf("webhook[%d].plainTextInput[%d].initialValue cannot be longer than maxLength", index, inputIndex)
 			}
-
-			if len(input.InitialValue) < input.MinLength {
-				return fmt.Errorf("webhook[%d].plainTextInput[%d].initialValue cannot be shorter than minLength", index, inputIndex)
-			}
 		}
 
 		for inputIndex, input := range hook.CheckboxInput {
