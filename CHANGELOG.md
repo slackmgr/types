@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-05-08
+
+### Changed
+- `Alert.ValidateWebhooks()` now rejects `Webhook.SkipConfirmationDialog: true` when `PlainTextInput` or `CheckboxInput` is non-empty (input fields are collected via the confirmation dialog, so skipping the dialog leaves nowhere to render them)
+
 ## [0.6.0] - 2026-05-08
 
 ### Added
@@ -102,7 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/slackmgr/types/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/slackmgr/types/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/slackmgr/types/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/slackmgr/types/compare/v0.5.0...v0.5.1
