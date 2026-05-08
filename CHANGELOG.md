@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-05-08
+
+### Changed
+- `Alert.ValidateWebhooks()` no longer rejects `WebhookPlainTextInput.InitialValue` when its length is shorter than `MinLength` — `MinLength` constrains the user-submitted value, not the pre-filled initial value
+
 ## [0.5.1] - 2026-05-07
 
 ### Changed
@@ -92,7 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/slackmgr/types/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/slackmgr/types/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/slackmgr/types/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/slackmgr/types/compare/v0.4.0...v0.4.1
