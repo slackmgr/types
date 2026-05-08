@@ -792,6 +792,21 @@ func TestAlertValidation(t *testing.T) {
 		a.Clean()
 		require.ErrorContains(t, a.Validate(), "webhook[0].buttonStyle 'foo' is not valid")
 
+		// SkipConfirmationDialog cannot be true when ButtonStyle is danger
+		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", ButtonStyle: types.WebhookButtonStyleDanger, SkipConfirmationDialog: true}}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "webhook[0].skipConfirmationDialog must be false when buttonStyle is 'danger'")
+
+		// SkipConfirmationDialog is allowed with non-danger button styles
+		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", ButtonStyle: types.WebhookButtonStylePrimary, SkipConfirmationDialog: true}}}
+		a.Clean()
+		require.NoError(t, a.Validate())
+
+		// SkipConfirmationDialog defaults to false and is allowed with danger button style
+		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", ButtonStyle: types.WebhookButtonStyleDanger}}}
+		a.Clean()
+		require.NoError(t, a.Validate())
+
 		// Access level must be valid
 		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", AccessLevel: "foo"}}}
 		a.Clean()

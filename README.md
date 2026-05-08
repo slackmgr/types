@@ -207,16 +207,17 @@ Interactive buttons that appear on Slack posts. When clicked, they trigger HTTP 
 
 ```go
 type Webhook struct {
-    ID               string                    // Unique within alert
-    URL              string                    // HTTP URL or handler identifier
-    ButtonText       string                    // Button label (max 25 chars)
-    ButtonStyle      WebhookButtonStyle        // "primary" or "danger"
-    AccessLevel      WebhookAccessLevel        // Who can click: global_admins, channel_admins, channel_members
-    DisplayMode      WebhookDisplayMode        // When to show: always, open_issue, resolved_issue
-    ConfirmationText string                    // Optional confirmation dialog text
-    Payload          map[string]any            // Data sent in POST body
-    PlainTextInput   []*WebhookPlainTextInput  // Text input fields
-    CheckboxInput    []*WebhookCheckboxInput   // Checkbox groups
+    ID                     string                    // Unique within alert
+    URL                    string                    // HTTP URL or handler identifier
+    ButtonText             string                    // Button label (max 25 chars)
+    ButtonStyle            WebhookButtonStyle        // "primary" or "danger"
+    AccessLevel            WebhookAccessLevel        // Who can click: global_admins, channel_admins, channel_members
+    DisplayMode            WebhookDisplayMode        // When to show: always, open_issue, resolved_issue
+    ConfirmationText       string                    // Optional confirmation dialog text
+    SkipConfirmationDialog bool                      // If true, post the webhook without showing a confirmation dialog (cannot be true when ButtonStyle is "danger")
+    Payload                map[string]any            // Data sent in POST body
+    PlainTextInput         []*WebhookPlainTextInput  // Text input fields
+    CheckboxInput          []*WebhookCheckboxInput   // Checkbox groups
 }
 ```
 

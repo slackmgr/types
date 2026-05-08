@@ -323,8 +323,16 @@ type Webhook struct {
 	// ConfirmationText is the text displayed as the header of the confirmation dialog
 	// shown before triggering the webhook.
 	// If empty, a default header referencing the webhook URL is used.
+	// Ignored when SkipConfirmationDialog is true.
 	// Maximum length: MaxWebhookConfirmationTextLength characters.
 	ConfirmationText string `json:"confirmationText"`
+
+	// SkipConfirmationDialog, when true, instructs the core manager to post the webhook
+	// without first showing a confirmation dialog to the user.
+	// Defaults to false.
+	// Must be false when ButtonStyle is WebhookButtonStyleDanger: destructive actions
+	// always require a confirmation step.
+	SkipConfirmationDialog bool `json:"skipConfirmationDialog"`
 
 	// ButtonText is the label displayed on the button in Slack.
 	// This field is required.
@@ -334,6 +342,7 @@ type Webhook struct {
 	// ButtonStyle determines the visual appearance of the button in Slack.
 	// Valid values are defined by WebhookButtonStyle constants.
 	// If empty, defaults to WebhookButtonStyleDefault.
+	// When set to WebhookButtonStyleDanger, SkipConfirmationDialog must be false.
 	ButtonStyle WebhookButtonStyle `json:"buttonStyle"`
 
 	// AccessLevel controls who can click this webhook button.
@@ -854,6 +863,10 @@ func (a *Alert) ValidateWebhooks() error {
 
 		if hook.ButtonStyle != "" && !WebhookButtonStyleIsValid(hook.ButtonStyle) {
 			return fmt.Errorf("webhook[%d].buttonStyle '%s' is not valid, expected empty or one of [%s]", index, hook.ButtonStyle, strings.Join(ValidWebhookButtonStyles(), ", "))
+		}
+
+		if hook.SkipConfirmationDialog && hook.ButtonStyle == WebhookButtonStyleDanger {
+			return fmt.Errorf("webhook[%d].skipConfirmationDialog must be false when buttonStyle is '%s'", index, WebhookButtonStyleDanger)
 		}
 
 		if hook.AccessLevel != "" && !WebhookAccessLevelIsValid(hook.AccessLevel) {
