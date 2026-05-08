@@ -332,6 +332,9 @@ type Webhook struct {
 	// Defaults to false.
 	// Must be false when ButtonStyle is WebhookButtonStyleDanger: destructive actions
 	// always require a confirmation step.
+	// Must be false when PlainTextInput or CheckboxInput is non-empty: input fields
+	// are collected via the confirmation dialog, so skipping the dialog leaves nowhere
+	// to render them.
 	SkipConfirmationDialog bool `json:"skipConfirmationDialog"`
 
 	// ButtonText is the label displayed on the button in Slack.
@@ -363,11 +366,13 @@ type Webhook struct {
 	// PlainTextInput defines text input fields shown in the webhook's modal dialog before the webhook fires.
 	// User-entered values are sent back in WebhookCallback.PlainTextInput, keyed by each input's ID.
 	// Maximum of MaxWebhookPlainTextInputCount inputs.
+	// Must be empty when SkipConfirmationDialog is true.
 	PlainTextInput []*WebhookPlainTextInput `json:"plainTextInput"`
 
 	// CheckboxInput defines checkbox groups shown in the webhook's modal dialog before the webhook fires.
 	// Selected option values are sent back in WebhookCallback.CheckboxInput, keyed by each input's ID.
 	// Maximum of MaxWebhookCheckboxInputCount inputs.
+	// Must be empty when SkipConfirmationDialog is true.
 	CheckboxInput []*WebhookCheckboxInput `json:"checkboxInput"`
 }
 
@@ -867,6 +872,14 @@ func (a *Alert) ValidateWebhooks() error {
 
 		if hook.SkipConfirmationDialog && hook.ButtonStyle == WebhookButtonStyleDanger {
 			return fmt.Errorf("webhook[%d].skipConfirmationDialog must be false when buttonStyle is '%s'", index, WebhookButtonStyleDanger)
+		}
+
+		if hook.SkipConfirmationDialog && len(hook.PlainTextInput) > 0 {
+			return fmt.Errorf("webhook[%d].skipConfirmationDialog must be false when plainTextInput is non-empty", index)
+		}
+
+		if hook.SkipConfirmationDialog && len(hook.CheckboxInput) > 0 {
+			return fmt.Errorf("webhook[%d].skipConfirmationDialog must be false when checkboxInput is non-empty", index)
 		}
 
 		if hook.AccessLevel != "" && !WebhookAccessLevelIsValid(hook.AccessLevel) {

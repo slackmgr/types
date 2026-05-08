@@ -807,6 +807,16 @@ func TestAlertValidation(t *testing.T) {
 		a.Clean()
 		require.NoError(t, a.Validate())
 
+		// SkipConfirmationDialog cannot be true when PlainTextInput is non-empty
+		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", SkipConfirmationDialog: true, PlainTextInput: []*types.WebhookPlainTextInput{{ID: "x", Description: "y"}}}}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "webhook[0].skipConfirmationDialog must be false when plainTextInput is non-empty")
+
+		// SkipConfirmationDialog cannot be true when CheckboxInput is non-empty
+		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", SkipConfirmationDialog: true, CheckboxInput: []*types.WebhookCheckboxInput{{ID: "x", Label: "y", Options: []*types.WebhookCheckboxOption{{Value: "v", Text: "t"}}}}}}}
+		a.Clean()
+		require.ErrorContains(t, a.Validate(), "webhook[0].skipConfirmationDialog must be false when checkboxInput is non-empty")
+
 		// Access level must be valid
 		a = &types.Alert{Header: "a", RouteKey: "b", Webhooks: []*types.Webhook{{ID: "foo", URL: "http://foo.bar", ButtonText: "press me", AccessLevel: "foo"}}}
 		a.Clean()

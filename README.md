@@ -214,7 +214,7 @@ type Webhook struct {
     AccessLevel            WebhookAccessLevel        // Who can click: global_admins, channel_admins, channel_members
     DisplayMode            WebhookDisplayMode        // When to show: always, open_issue, resolved_issue
     ConfirmationText       string                    // Optional confirmation dialog text
-    SkipConfirmationDialog bool                      // If true, post the webhook without showing a confirmation dialog (cannot be true when ButtonStyle is "danger")
+    SkipConfirmationDialog bool                      // If true, post the webhook without showing a confirmation dialog (must be false when ButtonStyle is "danger" or when PlainTextInput/CheckboxInput is non-empty)
     Payload                map[string]any            // Data sent in POST body
     PlainTextInput         []*WebhookPlainTextInput  // Text input fields
     CheckboxInput          []*WebhookCheckboxInput   // Checkbox groups
