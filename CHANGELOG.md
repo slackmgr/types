@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `Alert.DeletionDelaySeconds` (deprecated, JSON `deletionDelaySeconds`, omitted when zero): legacy alias for `ArchivingDelaySeconds`, accepted for compatibility with older clients. Only honoured by the core manager when legacy features are enabled. `Clean()` clamps negative values to zero
+- `WebhookCallback.Input` (deprecated, JSON `input`, omitted when empty): legacy copy of `PlainTextInput` for older webhook receivers. Only populated by the core manager when legacy features are enabled
+
+### Changed
+- Disable the `exhaustruct_v5` linter (renamed in golangci-lint 2.15), matching the existing `exhaustruct` exclusion
+
 ## [0.6.1] - 2026-05-08
 
 ### Changed

@@ -3,6 +3,7 @@ package types_test
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -1200,6 +1201,30 @@ func TestAlertCleanAdditional(t *testing.T) {
 		}
 		a.Clean()
 		assert.Equal(t, types.AlertError, a.Escalation[0].Severity)
+	})
+
+	t.Run("negative deletionDelaySeconds should be clamped to zero", func(t *testing.T) {
+		t.Parallel()
+
+		a := types.Alert{DeletionDelaySeconds: -10}
+		a.Clean()
+		assert.Equal(t, 0, a.DeletionDelaySeconds)
+
+		a = types.Alert{DeletionDelaySeconds: 3600}
+		a.Clean()
+		assert.Equal(t, 3600, a.DeletionDelaySeconds)
+	})
+
+	t.Run("deletionDelaySeconds JSON round-trip", func(t *testing.T) {
+		t.Parallel()
+
+		var a types.Alert
+		require.NoError(t, json.Unmarshal([]byte(`{"deletionDelaySeconds":120}`), &a))
+		assert.Equal(t, 120, a.DeletionDelaySeconds)
+
+		data, err := json.Marshal(&types.Alert{})
+		require.NoError(t, err)
+		assert.NotContains(t, string(data), "deletionDelaySeconds")
 	})
 }
 

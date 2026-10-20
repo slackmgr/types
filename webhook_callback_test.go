@@ -1,10 +1,12 @@
 package types_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/slackmgr/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWebhookGetPayloadValue(t *testing.T) {
@@ -120,6 +122,22 @@ func TestWebhookGetInputValue(t *testing.T) {
 
 	val = w.GetInputValue("invalid")
 	assert.Empty(t, val)
+}
+
+func TestWebhookCallbackLegacyInputJSON(t *testing.T) {
+	t.Parallel()
+
+	data, err := json.Marshal(&types.WebhookCallback{PlainTextInput: map[string]string{"key": "value"}})
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), `"input"`)
+
+	data, err = json.Marshal(&types.WebhookCallback{
+		PlainTextInput: map[string]string{"key": "value"},
+		Input:          map[string]string{"key": "value"},
+	})
+	require.NoError(t, err)
+	assert.Contains(t, string(data), `"input":{"key":"value"}`)
+	assert.Contains(t, string(data), `"plainTextInput":{"key":"value"}`)
 }
 
 func TestGetCheckboxInputSelectedValues(t *testing.T) {

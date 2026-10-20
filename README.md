@@ -242,10 +242,14 @@ type WebhookCallback struct {
     UserRealName  string              // User's display name
     ChannelID     string              // Channel where button was clicked
     MessageID     string              // Slack message ID
-    Timestamp     time.Time           // When button was clicked
-    Input         map[string]string   // Text input values
-    CheckboxInput map[string][]string // Checkbox selected values
-    Payload       map[string]any      // Original webhook payload + metadata
+    Timestamp      time.Time           // When button was clicked
+    PlainTextInput map[string]string   // Text input values
+    CheckboxInput  map[string][]string // Checkbox selected values
+    Payload        map[string]any      // Original webhook payload + metadata
+
+    // Deprecated: legacy copy of PlainTextInput (JSON key "input"), only populated when
+    // the manager runs with legacy features enabled
+    Input map[string]string
 }
 ```
 

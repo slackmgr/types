@@ -276,6 +276,12 @@ type Alert struct {
 
 	// Deprecated: FailOnRateLimitError is no longer in use.
 	FailOnRateLimitError bool `json:"failOnRateLimitError"`
+
+	// Deprecated: DeletionDelaySeconds is a legacy alias for ArchivingDelaySeconds, kept for
+	// compatibility with older clients. It is ignored unless the manager runs with legacy
+	// features enabled, in which case it is used when ArchivingDelaySeconds is not set.
+	// Use ArchivingDelaySeconds instead.
+	DeletionDelaySeconds int `json:"deletionDelaySeconds,omitempty"`
 }
 
 // Field is an alert field.
@@ -544,6 +550,10 @@ func (a *Alert) Clean() {
 
 	if a.NotificationDelaySeconds < 0 {
 		a.NotificationDelaySeconds = 0
+	}
+
+	if a.DeletionDelaySeconds < 0 {
+		a.DeletionDelaySeconds = 0
 	}
 
 	for _, field := range a.Fields {

@@ -26,6 +26,11 @@ type WebhookCallback struct {
 	// keyed by each input's ID.
 	PlainTextInput map[string]string `json:"plainTextInput"`
 
+	// Deprecated: Input is a legacy copy of PlainTextInput, kept for compatibility with older
+	// webhook receivers that read the "input" JSON key. It is only populated when the manager
+	// runs with legacy features enabled. Use PlainTextInput instead.
+	Input map[string]string `json:"input,omitempty"`
+
 	// CheckboxInput contains the selected option values from the webhook's CheckboxInput groups,
 	// keyed by each input's ID. Each value is the list of selected option values.
 	CheckboxInput map[string][]string `json:"checkboxInput"`
