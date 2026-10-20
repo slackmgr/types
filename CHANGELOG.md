@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-20
+
 ### Added
 - `Alert.DeletionDelaySeconds` (deprecated, JSON `deletionDelaySeconds`, omitted when zero): legacy alias for `ArchivingDelaySeconds`, accepted for compatibility with older clients. Only honoured by the core manager when legacy features are enabled. `Clean()` clamps negative values to zero
 - `WebhookCallback.Input` (deprecated, JSON `input`, omitted when empty): legacy copy of `PlainTextInput` for older webhook receivers. Only populated by the core manager when legacy features are enabled
 
 ### Changed
+- Minimum Go version is now 1.26
+- Bump `github.com/stretchr/testify` to v1.12.1
+- Update GitHub Actions to latest versions (`actions/checkout` v7.0.1, `actions/setup-go` v7.0.0, `golangci/golangci-lint-action` v9.3.0)
 - Disable the `exhaustruct_v5` linter (renamed in golangci-lint 2.15), matching the existing `exhaustruct` exclusion
 
 ## [0.6.1] - 2026-05-08
@@ -114,7 +119,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/slackmgr/types/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/slackmgr/types/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/slackmgr/types/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/slackmgr/types/compare/v0.5.1...v0.5.2
