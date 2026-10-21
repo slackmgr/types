@@ -206,7 +206,9 @@ type InsightsGrouping struct {
 	// Buckets are aligned to the Unix epoch, so e.g. hourly buckets start on the hour (UTC).
 	Bucket time.Duration
 
-	// Limit is the maximum number of rows to return. Zero means [MaxInsightsRows].
+	// Limit is the maximum number of rows to return; any further rows are silently dropped (e.g. for top N
+	// queries). Zero means all rows, up to [MaxInsightsRows]; if more rows match, the query fails with
+	// [ErrInsightsTooManyRows].
 	Limit int
 }
 

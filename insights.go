@@ -9,6 +9,11 @@ import (
 // ErrInsightsNotSupported is returned by insights readers and services when the underlying storage does not support insights.
 var ErrInsightsNotSupported = errors.New("insights not supported by the database implementation")
 
+// ErrInsightsTooManyRows is returned by count and stats queries without an explicit [InsightsGrouping.Limit]
+// when more than [MaxInsightsRows] groups match. Narrow the time range or filter, use a larger bucket, or group
+// by fewer dimensions.
+var ErrInsightsTooManyRows = errors.New("insights query matches too many rows")
+
 // InsightsSink persists batches of [InsightsEvent] values.
 //
 // Implementations must honour the context deadline, must be safe for concurrent use, and must not share
@@ -33,10 +38,14 @@ type InsightsSinkProvider interface {
 // Queries must be validated with the Validate method of the query type before they are executed.
 type InsightsReader interface {
 	// CountInsightsEvents counts events matching the query filter, grouped by the query dimensions.
+	// If [InsightsGrouping.Limit] is zero and more than [MaxInsightsRows] groups match, it returns
+	// [ErrInsightsTooManyRows] rather than a truncated result.
 	CountInsightsEvents(ctx context.Context, query *InsightsCountQuery) ([]*InsightsCountRow, error)
 
 	// InsightsValueStats computes aggregates of one numeric event value (see [InsightsEvent.Values]) for events
 	// matching the query filter, grouped by the query dimensions. Events without the value are ignored.
+	// If [InsightsGrouping.Limit] is zero and more than [MaxInsightsRows] groups match, it returns
+	// [ErrInsightsTooManyRows] rather than a truncated result.
 	InsightsValueStats(ctx context.Context, query *InsightsStatsQuery) ([]*InsightsStatsRow, error)
 
 	// ListInsightsEvents returns a page of events matching the query filter, ordered by time.

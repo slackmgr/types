@@ -343,7 +343,7 @@ type InsightsEvent struct {
 }
 ```
 
-Events carry identifiers and classifications only, never alert content. Every event type, reason and value key is defined as a documented constant (`InsightsEvent*`, `InsightsReason*`, `InsightsValue*`). Events are best-effort: they may be lost (e.g. buffer overflow), in which case an `insights.gap` event records how many were lost.
+Events carry identifiers and classifications only, never alert content. They do include some personal data: the alert `Host` and `Author`, and the Slack user ID and real name of users who run commands (`ActorID`, `ActorName`). Keep this in mind when choosing the storage retention. Every event type, reason and value key is defined as a documented constant (`InsightsEvent*`, `InsightsReason*`, `InsightsValue*`). Events are best-effort: they may be lost (e.g. buffer overflow), in which case an `insights.gap` event records how many were lost.
 
 ### Interfaces
 
@@ -357,6 +357,8 @@ All insights interfaces are optional. `DB` is unchanged, and implementations wit
 | `InsightsReaderProvider` | Optionally implemented by a `DB`. Returns the reader, or nil. |
 
 `ErrInsightsNotSupported` is returned when insights are not available. Queries (`InsightsCountQuery`, `InsightsStatsQuery`, `InsightsListQuery`) have a `Validate()` method enforcing shared limits, e.g. a maximum time range of 366 days and at most 2000 time buckets.
+
+Count and stats queries return at most `MaxInsightsRows` (10,000) groups. With an explicit `Limit` (e.g. top-N), further groups are silently dropped. Without one, a query matching more groups fails with `ErrInsightsTooManyRows` rather than returning a truncated result.
 
 ## Field Specifications
 

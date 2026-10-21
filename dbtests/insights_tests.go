@@ -3,6 +3,7 @@ package dbtests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -25,6 +26,7 @@ func RunAllInsightsTests(t *testing.T, db types.DB, sink types.InsightsSink, rea
 	t.Run("InsightsCount", func(t *testing.T) { TestInsightsCount(t, sink, reader) })
 	t.Run("InsightsCountFilters", func(t *testing.T) { TestInsightsCountFilters(t, sink, reader) })
 	t.Run("InsightsValueStats", func(t *testing.T) { TestInsightsValueStats(t, sink, reader) })
+	t.Run("InsightsTooManyRows", func(t *testing.T) { TestInsightsTooManyRows(t, sink, reader) })
 	t.Run("InsightsLoadOpenIssues", func(t *testing.T) { TestInsightsLoadOpenIssues(t, db, reader) })
 }
 
@@ -400,6 +402,58 @@ func TestInsightsValueStats(t *testing.T, sink types.InsightsSink, reader types.
 	assert.InDelta(t, 100, rows[0].Values[types.InsightsAggregateMax], 0.001)
 }
 
+// TestInsightsTooManyRows verifies that count and stats queries without an explicit limit fail with
+// [types.ErrInsightsTooManyRows] instead of returning a truncated result, and that an explicit limit truncates.
+func TestInsightsTooManyRows(t *testing.T, sink types.InsightsSink, reader types.InsightsReader) {
+	ctx := context.Background()
+	base := insightsTestBase()
+	channel := uniqueChannelID()
+
+	events := make([]types.InsightsEvent, types.MaxInsightsRows+1)
+	for i := range events {
+		events[i] = types.InsightsEvent{
+			Time: base.Add(time.Minute), Type: types.InsightsEventIssueArchived, ChannelID: channel,
+			IssueID: fmt.Sprintf("issue-%05d", i), Values: map[string]float64{types.InsightsValueAlertCount: 1},
+		}
+	}
+
+	// One event of another type, so that filtering on the archived type matches exactly the maximum.
+	events[types.MaxInsightsRows].Type = types.InsightsEventIssueCreated
+
+	require.NoError(t, sink.WriteInsightsEvents(ctx, events))
+
+	filter := types.InsightsFilter{From: base, To: base.Add(time.Hour), ChannelIDs: []string{channel}}
+	grouping := types.InsightsGrouping{GroupBy: []types.InsightsDimension{types.InsightsDimensionIssue}}
+
+	t.Run("count without limit", func(t *testing.T) {
+		_, err := reader.CountInsightsEvents(ctx, &types.InsightsCountQuery{InsightsFilter: filter, InsightsGrouping: grouping})
+		require.ErrorIs(t, err, types.ErrInsightsTooManyRows)
+	})
+
+	t.Run("stats without limit", func(t *testing.T) {
+		_, err := reader.InsightsValueStats(ctx, &types.InsightsStatsQuery{
+			InsightsFilter: filter, InsightsGrouping: grouping,
+			ValueKey: types.InsightsValueAlertCount, Aggregates: []types.InsightsAggregate{types.InsightsAggregateSum},
+		})
+		require.ErrorIs(t, err, types.ErrInsightsTooManyRows)
+	})
+
+	t.Run("count with explicit limit truncates", func(t *testing.T) {
+		limited := grouping
+		limited.Limit = types.MaxInsightsRows
+
+		rows := countRows(t, reader, &types.InsightsCountQuery{InsightsFilter: filter, InsightsGrouping: limited})
+		assert.Len(t, rows, types.MaxInsightsRows)
+	})
+
+	t.Run("exactly the maximum without limit", func(t *testing.T) {
+		rows := countRows(t, reader, &types.InsightsCountQuery{
+			InsightsFilter: withTypes(filter, types.InsightsEventIssueArchived), InsightsGrouping: grouping,
+		})
+		assert.Len(t, rows, types.MaxInsightsRows)
+	})
+}
+
 // TestInsightsLoadOpenIssues verifies loading open issues across channels.
 func TestInsightsLoadOpenIssues(t *testing.T, db types.DB, reader types.InsightsReader) {
 	ctx := context.Background()
@@ -430,6 +484,11 @@ func TestInsightsLoadOpenIssues(t *testing.T, db types.DB, reader types.Insights
 	assert.Contains(t, issues, open1.ID)
 	assert.Contains(t, issues, open2.ID)
 	assert.NotContains(t, issues, archived.ID)
+}
+
+func withTypes(f types.InsightsFilter, eventTypes ...types.InsightsEventType) types.InsightsFilter {
+	f.Types = eventTypes
+	return f
 }
 
 func countRows(t *testing.T, reader types.InsightsReader, query *types.InsightsCountQuery) []*types.InsightsCountRow {
