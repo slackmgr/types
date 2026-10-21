@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is `types`, a Go shared library package providing common interfaces and data structures for the Slack Manager system. It defines contracts for database access, logging, metrics, and core domain types like alerts and issues.
 
 **Module:** `github.com/slackmgr/types`
-**Go Version:** 1.25
+**Go Version:** 1.26
 
 ## Build Commands
 

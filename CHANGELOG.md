@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- CI and code scanning workflows read the Go version (major.minor) from `go.mod` and install the latest patch release (`check-latest: true`), so all jobs, including both govulncheck runs, use the same Go version
+- Update GitHub Actions to latest versions in code scanning (`actions/checkout` v7.0.1, `actions/setup-go` v7.0.0, `github/codeql-action` v4.39.0)
+
 ## [0.7.0] - 2026-10-20
 
 ### Added
