@@ -122,7 +122,7 @@ const (
 	InsightsEventChannelStats InsightsEventType = "channel.stats"
 
 	// InsightsEventGap is recorded by an insights recorder after events were lost (e.g. buffer overflow or write
-	// errors). Count holds the number of lost events since the previous gap event.
+	// errors). Count and the [InsightsValueLostEvents] value hold the number of lost events since the previous gap event.
 	InsightsEventGap InsightsEventType = "insights.gap"
 )
 
@@ -272,6 +272,9 @@ const (
 
 	// InsightsValueEscalated is the number of escalated open issues ([InsightsEventChannelStats]).
 	InsightsValueEscalated = "escalated"
+
+	// InsightsValueLostEvents is the number of events lost since the previous gap event ([InsightsEventGap]).
+	InsightsValueLostEvents = "lost_events"
 )
 
 // InsightsMaxDetailLen is the maximum length of [InsightsEvent.Detail]. Longer values are truncated by [InsightsEvent.Normalize].
