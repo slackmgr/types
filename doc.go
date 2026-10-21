@@ -30,6 +30,14 @@
 // ChannelProcessingState - Tracks per-channel processing timestamps and open issue counts
 // to prevent concurrent processing and ensure regular intervals.
 //
+// # Insights
+//
+// InsightsEvent is a structured, queryable record of what the Slack Manager did (alert outcomes, issue
+// lifecycle, commands, Slack posts, channel snapshots). DB implementations may optionally support recording
+// and reading insights by implementing InsightsSinkProvider and InsightsReaderProvider. The InsightsSink and
+// InsightsReader interfaces, and the InsightsCountQuery, InsightsStatsQuery and InsightsListQuery types,
+// define the contract.
+//
 // # Webhook Support
 //
 // The package provides rich webhook support with interactive buttons, input forms, and access control:
@@ -53,7 +61,8 @@
 // # Testing Utilities
 //
 // The dbtests subpackage provides a shared test suite that can be run against any DB implementation
-// to ensure compliance with the interface contract.
+// to ensure compliance with the interface contract, and an insights suite (RunAllInsightsTests) for
+// implementations that support insights.
 //
 // No-op implementations (NoopLogger, NoopMetrics) are provided for testing purposes.
 // InMemoryFifoQueue is provided for testing but should not be used in production.

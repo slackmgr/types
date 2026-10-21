@@ -318,6 +318,46 @@ type ChannelProcessingState struct {
 func NewChannelProcessingState(channelID string) *ChannelProcessingState
 ```
 
+## Insights
+
+Insights is an optional, queryable record of what the Slack Manager does: alert outcomes, issue lifecycle, user commands, Slack posts and periodic channel snapshots. It complements logs and metrics with a per-channel, per-issue, human-oriented view for dashboards.
+
+### InsightsEvent
+
+```go
+type InsightsEvent struct {
+    Time             time.Time
+    Type             InsightsEventType  // e.g. "alert.grouped", "issue.archived", "command.executed"
+    Reason           string             // sub-classification, depends on Type
+    ChannelID        string
+    RelatedChannelID string             // e.g. move target
+    IssueID          string
+    CorrelationID    string
+    Severity         AlertSeverity
+    PrevSeverity     AlertSeverity
+    RouteKey, AlertType, Host, Author string
+    ActorID, ActorName string           // Slack user (commands)
+    Count            int
+    Detail           string             // short free text, max 200 chars
+    Values           map[string]float64 // numeric facts, e.g. "open_s", "time_to_resolve_s"
+}
+```
+
+Events carry identifiers and classifications only, never alert content. Every event type, reason and value key is defined as a documented constant (`InsightsEvent*`, `InsightsReason*`, `InsightsValue*`). Events are best-effort: they may be lost (e.g. buffer overflow), in which case an `insights.gap` event records how many were lost.
+
+### Interfaces
+
+All insights interfaces are optional. `DB` is unchanged, and implementations without insights support keep working.
+
+| Interface | Purpose |
+|---|---|
+| `InsightsSink` | `WriteInsightsEvents(ctx, []InsightsEvent)`: persists a batch of events. Must not share connection capacity or transactions with regular writes. |
+| `InsightsSinkProvider` | Optionally implemented by a `DB`. Returns the sink, or nil when recording is disabled. |
+| `InsightsReader` | Query primitives: `CountInsightsEvents` (grouped counts, time buckets, distinct counts, top-N), `InsightsValueStats` (sum/avg/min/max/percentiles of a value), `ListInsightsEvents` (cursor-paginated listing), `LoadOpenIssues`. Must only require read privileges. |
+| `InsightsReaderProvider` | Optionally implemented by a `DB`. Returns the reader, or nil. |
+
+`ErrInsightsNotSupported` is returned when insights are not available. Queries (`InsightsCountQuery`, `InsightsStatsQuery`, `InsightsListQuery`) have a `Validate()` method enforcing shared limits, e.g. a maximum time range of 366 days and at most 2000 time buckets.
+
 ## Field Specifications
 
 The `Field` struct is used for additional key-value pairs displayed in Slack:
@@ -348,6 +388,12 @@ func TestDatabaseCompliance(t *testing.T) {
 ```
 
 This ensures your database implementation correctly satisfies the `DB` interface contract.
+
+Implementations that support insights can also run the insights compliance suite:
+
+```go
+dbtests.RunAllInsightsTests(t, db, sink, reader)
+```
 
 ### No-op Implementations
 

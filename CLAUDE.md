@@ -91,6 +91,7 @@ Follows [Semantic Versioning](https://semver.org/):
 - **DB** (`db.go`) - Database abstraction for persisting alerts, issues, move mappings, and channel processing state. Implementations provided by consumers.
 - **Logger** (`logger.go`) - Structured logging interface with Debug/Info/Error levels and field support.
 - **Metrics** (`metrics.go`) - Prometheus-style metrics (counter, gauge, histogram).
+- **Insights** (`insights.go`, `insights_event.go`, `insights_query.go`) - Optional `InsightsSink`/`InsightsReader` interfaces (plus `*Provider` interfaces discovered by type assertion on a `DB`), the `InsightsEvent` type with all event type/reason/value constants, and validated query types. `DB` itself is unchanged.
 
 Each interface has a no-op implementation (`noop_logger.go`, `noop_metrics.go`) for testing.
 
@@ -107,6 +108,7 @@ Each interface has a no-op implementation (`noop_logger.go`, `noop_metrics.go`) 
 ### Testing Utilities
 
 - `dbtests/tests.go` - Shared database test suite that can be run against any DB implementation.
+- `dbtests/insights_tests.go` - Shared insights compliance suite (`RunAllInsightsTests`).
 - `InMemoryFifoQueue` - Test-only FIFO queue (NOT for production use).
 
 ## Code Patterns

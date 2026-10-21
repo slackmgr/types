@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Insights: `InsightsEvent` with documented event types (`InsightsEvent*`), reasons (`InsightsReason*`) and value keys (`InsightsValue*`), and `InsightsEvent.Normalize`
+- Optional insights interfaces, discovered by type assertion on a `DB`: `InsightsSink` and `InsightsSinkProvider` (recording), `InsightsReader` and `InsightsReaderProvider` (reading). `DB` is unchanged
+- Insights query types `InsightsFilter`, `InsightsGrouping`, `InsightsCountQuery`, `InsightsStatsQuery`, `InsightsListQuery` with `Validate()` and shared limits, result types `InsightsCountRow`, `InsightsStatsRow`, `InsightsEventPage`, and enums `InsightsDimension` and `InsightsAggregate`
+- `ErrInsightsNotSupported`
+- `dbtests.RunAllInsightsTests` and individual insights compliance tests
+
 ## [0.7.1] - 2026-10-21
 
 ### Changed
