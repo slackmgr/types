@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-21
+
 ### Changed
 - CI and code scanning workflows read the Go version (major.minor) from `go.mod` and install the latest patch release (`check-latest: true`), so all jobs, including both govulncheck runs, use the same Go version
 - Update GitHub Actions to latest versions in code scanning (`actions/checkout` v7.0.1, `actions/setup-go` v7.0.0, `github/codeql-action` v4.39.0)
+- CLAUDE.md: Go version updated to 1.26
 
 ## [0.7.0] - 2026-10-20
 
@@ -123,7 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/slackmgr/types/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/slackmgr/types/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/slackmgr/types/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/slackmgr/types/compare/v0.5.2...v0.6.0
