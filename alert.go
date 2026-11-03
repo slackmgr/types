@@ -102,7 +102,7 @@ const (
 	MaxWebhookCheckboxInputCount = 10
 	// MaxWebhookInputIDLength is the maximum length of an input field ID.
 	MaxWebhookInputIDLength = 200
-	// MaxWebhookInputDescriptionLength is the maximum length of an input field description/placeholder.
+	// MaxWebhookInputDescriptionLength is the maximum length of an input field description (label).
 	MaxWebhookInputDescriptionLength = 200
 	// MaxWebhookInputLabelLength is the maximum length of a checkbox group label.
 	MaxWebhookInputLabelLength = 200
@@ -396,11 +396,12 @@ type WebhookPlainTextInput struct {
 	// Maximum length: MaxWebhookInputIDLength characters.
 	ID string `json:"id"`
 
-	// Description is the placeholder text shown in the input field before the user types.
+	// Description is the label shown above the input field.
 	// Maximum length: MaxWebhookInputDescriptionLength characters.
 	Description string `json:"description"`
 
 	// MinLength is the minimum number of characters required for the input.
+	// Zero makes the input optional, i.e. the user can leave it empty. Any other value makes it required.
 	// Must be >= 0 and <= MaxLength.
 	MinLength int `json:"minLength"`
 

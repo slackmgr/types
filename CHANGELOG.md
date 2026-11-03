@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Documented that `WebhookPlainTextInput.MinLength` 0 makes the input optional
+- Fixed the `WebhookPlainTextInput.Description` doc: it is the input's label, not its placeholder
+
 ## [0.10.0] - 2026-11-03
 
 ### Added
