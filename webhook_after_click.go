@@ -1,7 +1,9 @@
 package types
 
 import (
+	"fmt"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -101,4 +103,67 @@ func (w *WebhookAfterClick) HidesWebhook(clickedWebhookID, webhookID string) boo
 	}
 
 	return slices.Contains(w.HideWebhookIDs, webhookID)
+}
+
+// clean trims whitespace and applies the default HideButtons value. It is a no-op on a nil receiver.
+func (w *WebhookAfterClick) clean() {
+	if w == nil {
+		return
+	}
+
+	if w.HideButtons == "" {
+		w.HideButtons = WebhookHideButtonsNone
+	}
+
+	w.StatusText = strings.TrimSpace(w.StatusText)
+
+	for i, id := range w.HideWebhookIDs {
+		w.HideWebhookIDs[i] = strings.TrimSpace(id)
+	}
+}
+
+// validate validates the after-click settings. field is the field path used in error messages.
+// If webhookIDs is non-nil, each of HideWebhookIDs must be a key in it. Otherwise, each ID must be non-empty and
+// at most MaxWebhookIDLength characters, since the webhooks of the alert are not known (e.g. in a [WebhookResult]).
+// It is a no-op on a nil receiver.
+func (w *WebhookAfterClick) validate(field string, webhookIDs map[string]struct{}) error {
+	if w == nil {
+		return nil
+	}
+
+	if w.HideButtons != "" && !WebhookHideButtonsIsValid(w.HideButtons) {
+		return fmt.Errorf("%s.hideButtons '%s' is not valid, expected empty or one of [%s]", field, w.HideButtons, strings.Join(ValidWebhookHideButtons(), ", "))
+	}
+
+	if len(w.HideWebhookIDs) > MaxWebhookCount {
+		return fmt.Errorf("%s.hideWebhookIds item count is too large, expected <=%d", field, MaxWebhookCount)
+	}
+
+	for idIndex, id := range w.HideWebhookIDs {
+		if webhookIDs != nil {
+			if _, ok := webhookIDs[id]; !ok {
+				return fmt.Errorf("%s.hideWebhookIds[%d] '%s' does not match any webhook id in the alert", field, idIndex, id)
+			}
+
+			continue
+		}
+
+		if id == "" {
+			return fmt.Errorf("%s.hideWebhookIds[%d] is required", field, idIndex)
+		}
+
+		if len(id) > MaxWebhookIDLength {
+			return fmt.Errorf("%s.hideWebhookIds[%d] is too long, expected length <=%d", field, idIndex, MaxWebhookIDLength)
+		}
+	}
+
+	if len(w.StatusText) > MaxWebhookAfterClickStatusTextLength {
+		return fmt.Errorf("%s.statusText is too long, expected length <=%d", field, MaxWebhookAfterClickStatusTextLength)
+	}
+
+	if w.ResetAfterSeconds < 0 || w.ResetAfterSeconds > MaxWebhookAfterClickResetSeconds {
+		return fmt.Errorf("%s.resetAfterSeconds must be between 0 and %d", field, MaxWebhookAfterClickResetSeconds)
+	}
+
+	return nil
 }

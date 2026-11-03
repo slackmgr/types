@@ -284,6 +284,33 @@ type WebhookCallback struct {
 - `GetInputValue(key string) string`
 - `GetCheckboxInputSelectedValues(key string) []string`
 
+### WebhookResult
+
+Optional feedback from a synchronous webhook receiver (e.g. an HTTP endpoint) on a button click. The receiver
+responds with a JSON body wrapped in the `slackManagerResult` key (`WebhookResultKey`), so existing response bodies
+are never mistaken for results. Acceptance is signalled by the response itself (for HTTP: 2xx = accepted,
+4xx = rejected), not by the body:
+
+```json
+{"slackManagerResult": {"message": "3 pods will be restarted", "afterClick": {"hideButtons": "all", "statusText": "Restart in progress"}}}
+```
+
+```go
+type WebhookResponse struct {
+    Result *WebhookResult // JSON key "slackManagerResult"; nil if missing
+}
+
+type WebhookResult struct {
+    Message    string             // Optional message for the clicking user (plain text, max 1000 chars)
+    AfterClick *WebhookAfterClick // Optional, overrides Webhook.AfterClick for this click; ignored when rejected
+}
+```
+
+- `Clean()` trims whitespace and applies defaults; `Validate()` checks the message length and the after-click settings.
+  `AfterClick.HideWebhookIDs` can't be checked against the alert here, so each ID only needs to be non-empty and
+  at most `MaxWebhookIDLength` chars.
+- Asynchronous handlers (e.g. queues) have no response; those receivers update the alert instead.
+
 ### Issue
 
 The `Issue` interface represents an issue in a Slack channel. Issues group related alerts together and track their resolution status.
@@ -500,6 +527,7 @@ The package defines extensive validation constants. Key limits include:
 | `MaxWebhookAfterClickStatusTextLength` | 200 | Webhook after-click status text length |
 | `DefaultWebhookAfterClickResetSeconds` | 300 | Default webhook after-click reset delay |
 | `MaxWebhookAfterClickResetSeconds` | 86,400 | Maximum webhook after-click reset delay (24h) |
+| `MaxWebhookResultMessageLength` | 1,000 | Webhook result message length |
 | `MaxEscalationCount` | 3 | Escalation points per alert |
 | `MinAutoResolveSeconds` | 30 | Minimum auto-resolve time |
 | `MaxAutoResolveSeconds` | 63,113,851 | Maximum auto-resolve time (~2 years) |

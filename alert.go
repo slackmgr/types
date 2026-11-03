@@ -610,17 +610,7 @@ func (a *Alert) Clean() {
 			input.Label = strings.TrimSpace(input.Label)
 		}
 
-		if hook.AfterClick != nil {
-			if hook.AfterClick.HideButtons == "" {
-				hook.AfterClick.HideButtons = WebhookHideButtonsNone
-			}
-
-			hook.AfterClick.StatusText = strings.TrimSpace(hook.AfterClick.StatusText)
-
-			for i, id := range hook.AfterClick.HideWebhookIDs {
-				hook.AfterClick.HideWebhookIDs[i] = strings.TrimSpace(id)
-			}
-		}
+		hook.AfterClick.clean()
 	}
 
 	if len(a.Escalation) > 0 {
@@ -1036,39 +1026,9 @@ func (a *Alert) ValidateWebhooks() error {
 
 	// After-click settings are validated last, since they may refer to any webhook in the alert.
 	for index, hook := range a.Webhooks {
-		if err := validateWebhookAfterClick(index, hook.AfterClick, webhookIDs); err != nil {
+		if err := hook.AfterClick.validate(fmt.Sprintf("webhook[%d].afterClick", index), webhookIDs); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func validateWebhookAfterClick(index int, afterClick *WebhookAfterClick, webhookIDs map[string]struct{}) error {
-	if afterClick == nil {
-		return nil
-	}
-
-	if afterClick.HideButtons != "" && !WebhookHideButtonsIsValid(afterClick.HideButtons) {
-		return fmt.Errorf("webhook[%d].afterClick.hideButtons '%s' is not valid, expected empty or one of [%s]", index, afterClick.HideButtons, strings.Join(ValidWebhookHideButtons(), ", "))
-	}
-
-	if len(afterClick.HideWebhookIDs) > MaxWebhookCount {
-		return fmt.Errorf("webhook[%d].afterClick.hideWebhookIds item count is too large, expected <=%d", index, MaxWebhookCount)
-	}
-
-	for idIndex, id := range afterClick.HideWebhookIDs {
-		if _, ok := webhookIDs[id]; !ok {
-			return fmt.Errorf("webhook[%d].afterClick.hideWebhookIds[%d] '%s' does not match any webhook id in the alert", index, idIndex, id)
-		}
-	}
-
-	if len(afterClick.StatusText) > MaxWebhookAfterClickStatusTextLength {
-		return fmt.Errorf("webhook[%d].afterClick.statusText is too long, expected length <=%d", index, MaxWebhookAfterClickStatusTextLength)
-	}
-
-	if afterClick.ResetAfterSeconds < 0 || afterClick.ResetAfterSeconds > MaxWebhookAfterClickResetSeconds {
-		return fmt.Errorf("webhook[%d].afterClick.resetAfterSeconds must be between 0 and %d", index, MaxWebhookAfterClickResetSeconds)
 	}
 
 	return nil

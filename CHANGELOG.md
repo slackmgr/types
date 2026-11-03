@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `WebhookResult` and `WebhookResponse`: optional feedback from a synchronous webhook receiver, wrapped in the `slackManagerResult` key (`WebhookResultKey`). Contains an optional `Message` for the clicking user (max 1000 chars) and an optional `AfterClick` that overrides `Webhook.AfterClick` for the click (ignored when the request was rejected). Acceptance is signalled by the response itself (e.g. HTTP 2xx/4xx), not by the body. `Clean()` applies defaults, `Validate()` checks the result
+- Constants `WebhookResultKey`, `MaxWebhookResultMessageLength`
+
 ## [0.9.0] - 2026-11-03
 
 ### Added
