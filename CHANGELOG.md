@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-03
+
 ### Added
 - `WebhookResult` and `WebhookResponse`: optional feedback from a synchronous webhook receiver, wrapped in the `slackManagerResult` key (`WebhookResultKey`). Contains an optional `Message` for the clicking user (max 1000 chars) and an optional `AfterClick` that overrides `Webhook.AfterClick` for the click (ignored when the request was rejected). Acceptance is signalled by the response itself (e.g. HTTP 2xx/4xx), not by the body. `Clean()` applies defaults, `Validate()` checks the result
 - Constants `WebhookResultKey`, `MaxWebhookResultMessageLength`
@@ -146,7 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/slackmgr/types/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/slackmgr/types/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/slackmgr/types/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/slackmgr/types/compare/v0.7.0...v0.7.1
