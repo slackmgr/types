@@ -218,6 +218,7 @@ type Webhook struct {
     Payload                map[string]any            // Data sent in POST body
     PlainTextInput         []*WebhookPlainTextInput  // Text input fields
     CheckboxInput          []*WebhookCheckboxInput   // Checkbox groups
+    AfterClick             *WebhookAfterClick        // Optional post-click state, see below
 }
 ```
 
@@ -225,11 +226,33 @@ type Webhook struct {
 - `WebhookPlainTextInput`: Text input with min/max length, multiline support, initial value
 - `WebhookCheckboxInput`: Checkbox group with label and multiple options
 - `WebhookCheckboxOption`: Individual checkbox with value, text, and selected state
+- `WebhookAfterClick`: Post-click state (see below)
 
 **Enums:**
 - `WebhookButtonStyle`: `primary`, `danger`
 - `WebhookAccessLevel`: `global_admins`, `channel_admins`, `channel_members`
 - `WebhookDisplayMode`: `always`, `open_issue`, `resolved_issue`
+- `WebhookHideButtons`: `none`, `clicked`, `all`
+
+**Post-click state (`AfterClick`):**
+
+Webhook receivers often take a while before they update the alert. `AfterClick` changes the Slack post as soon as
+the webhook is delivered, so everyone in the channel sees that the action is in progress, and duplicate clicks are
+avoided:
+
+```go
+type WebhookAfterClick struct {
+    HideButtons       WebhookHideButtons // "none" (default), "clicked" or "all"
+    HideWebhookIDs    []string           // Additional webhooks (by ID) to hide; must exist in the alert
+    StatusText        string             // Optional text shown on the post (max 200 chars)
+    ResetAfterSeconds int                // 0 = default 300 (5 min), max 86400 (24h)
+}
+```
+
+- Applied only when the webhook was delivered. On failure, the post is unchanged and the clicking user is informed.
+- Cleared by the next alert for the issue, even if the alert is otherwise unchanged or ignored.
+- If no alert arrives within `ResetAfterSeconds`, the buttons are shown again with a note that no update was received.
+- Helpers: `ResetAfter()` (with the default applied) and `HidesWebhook(clickedID, webhookID)`.
 
 ### WebhookCallback
 
@@ -474,13 +497,16 @@ The package defines extensive validation constants. Key limits include:
 | `MaxTextLength` | 10,000 | Alert text length |
 | `MaxFieldCount` | 20 | Fields per alert |
 | `MaxWebhookCount` | 5 | Webhooks per alert |
+| `MaxWebhookAfterClickStatusTextLength` | 200 | Webhook after-click status text length |
+| `DefaultWebhookAfterClickResetSeconds` | 300 | Default webhook after-click reset delay |
+| `MaxWebhookAfterClickResetSeconds` | 86,400 | Maximum webhook after-click reset delay (24h) |
 | `MaxEscalationCount` | 3 | Escalation points per alert |
 | `MinAutoResolveSeconds` | 30 | Minimum auto-resolve time |
 | `MaxAutoResolveSeconds` | 63,113,851 | Maximum auto-resolve time (~2 years) |
 | `MinEscalationDelaySeconds` | 30 | Minimum first escalation delay |
 | `MinEscalationDelayDiffSeconds` | 30 | Minimum time between escalations |
 
-See `alert.go` for the complete list of constants.
+See `alert.go` and `webhook_after_click.go` for the complete list of constants.
 
 ## License
 

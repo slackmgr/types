@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `Webhook.AfterClick` (`WebhookAfterClick`): optional post-click state for a webhook button, applied by Slack Manager once the webhook is delivered and cleared by the next alert or after `ResetAfterSeconds` (default 300, max 86400). It can hide the clicked button, all webhook buttons or listed webhooks (`HideButtons`, `HideWebhookIDs`), and show a `StatusText` (max 200 chars). Validated by `Alert.Validate`, defaults applied by `Alert.Clean`
+- `WebhookHideButtons` enum (`none`, `clicked`, `all`) with `WebhookHideButtonsIsValid` and `ValidWebhookHideButtons`
+- Constants `MaxWebhookAfterClickStatusTextLength`, `DefaultWebhookAfterClickResetSeconds`, `MaxWebhookAfterClickResetSeconds`
+
 ## [0.8.0] - 2026-10-21
 
 ### Added
