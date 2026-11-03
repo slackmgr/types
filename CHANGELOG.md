@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-03
+
 ### Changed
 - Documented that `WebhookPlainTextInput.MinLength` 0 makes the input optional
 - Fixed the `WebhookPlainTextInput.Description` doc: it is the input's label, not its placeholder
@@ -152,7 +154,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/slackmgr/types/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/slackmgr/types/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/slackmgr/types/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/slackmgr/types/compare/v0.7.1...v0.8.0
