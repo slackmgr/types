@@ -39,10 +39,14 @@ const (
 
 	// InsightsEventAlertFiltered means the API discarded a valid alert because of a client-defined rule
 	// (reason [InsightsReasonIgnoreTerm]). The client received a successful response.
+	// If the alert's channel is not a channel ID (e.g. an unmapped channel name), ChannelID is empty and
+	// Detail holds the value.
 	InsightsEventAlertFiltered InsightsEventType = "alert.filtered"
 
 	// InsightsEventAlertRejected means the API refused the alert and the client received an error response.
 	// The reason describes why, e.g. "validation", "no_route" or "rate_limited".
+	// If the alert's channel is not a channel ID (e.g. an unmapped channel name, or a channel that Slack
+	// did not find), ChannelID is empty and Detail holds the value.
 	InsightsEventAlertRejected InsightsEventType = "alert.rejected"
 )
 
@@ -294,7 +298,8 @@ type InsightsEvent struct {
 	// Reason is an optional sub-classification. The possible values depend on Type.
 	Reason string `json:"reason,omitempty"`
 
-	// ChannelID is the Slack channel where the event happened. It may be empty for API rejections before routing.
+	// ChannelID is the Slack channel where the event happened. It may be empty for API rejections before routing,
+	// and for API intake events whose channel is not a channel ID (see [InsightsEventAlertRejected]).
 	ChannelID string `json:"channelId,omitempty"`
 
 	// RelatedChannelID is a second channel involved in the event, e.g. the target channel of a move,

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Documented that `alert.rejected` and `alert.filtered` insights events carry a channel value that is not a channel ID in `Detail`, with an empty `ChannelID`
+
 ## [0.10.1] - 2026-11-03
 
 ### Changed
