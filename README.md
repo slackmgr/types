@@ -146,11 +146,14 @@ func NewInfoAlert() *Alert      // Severity: info
 | `Webhooks` | `[]*Webhook` | Interactive buttons (max 5) |
 | `Escalation` | `[]*Escalation` | Escalation points (max 3) |
 | `Fields` | `[]*Field` | Additional key-value fields (max 20) |
+| `Username` | `string` | Slack bot username the alert is posted as (max 100 chars, auto-truncated) |
+| `Client` | `string` | Optional, free-form identifier of the client (monitoring tool or integration) that produced the alert (max 100 chars, auto-truncated). Used only for grouping, filtering and reporting (insights and dashboards), never for routing or Slack rendering |
 
 **Methods:**
 - `Clean()`: Normalizes and truncates all fields to valid values
 - `Validate()`: Returns error if any field is invalid
 - `UniqueID()`: Returns a deterministic, base64-encoded unique ID
+- `EffectiveClient()`: Returns the client used for grouping and reporting: the trimmed `Client`, else the trimmed `Username`, else `UnknownClient` (`"unknown"`). Falling back to `Username` is permanent, supported behaviour, so setting `Client` is optional
 
 **Validation:**
 - The package defines extensive constants for maximum lengths (e.g., `MaxHeaderLength = 130`)
@@ -386,6 +389,7 @@ type InsightsEvent struct {
     Severity         AlertSeverity
     PrevSeverity     AlertSeverity
     RouteKey, AlertType, Host, Author string
+    Client           string             // effective client of the alert (Alert.EffectiveClient), max 100 chars
     ActorID, ActorName string           // Slack user (commands)
     Count            int
     Detail           string             // short free text, max 200 chars
@@ -393,7 +397,7 @@ type InsightsEvent struct {
 }
 ```
 
-Events carry identifiers and classifications only, never alert content. They do include some personal data: the alert `Host` and `Author`, and the Slack user ID and real name of users who run commands (`ActorID`, `ActorName`). Keep this in mind when choosing the storage retention. Every event type, reason and value key is defined as a documented constant (`InsightsEvent*`, `InsightsReason*`, `InsightsValue*`). Events are best-effort: they may be lost (e.g. buffer overflow), in which case an `insights.gap` event records how many were lost.
+Events carry identifiers and classifications only, never alert content. They do include some personal data: the alert `Host` and `Author`, the `Client` (which falls back to the alert `Username`, and some integrations post as a person), and the Slack user ID and real name of users who run commands (`ActorID`, `ActorName`). Keep this in mind when choosing the storage retention. Every event type, reason and value key is defined as a documented constant (`InsightsEvent*`, `InsightsReason*`, `InsightsValue*`). Events are best-effort: they may be lost (e.g. buffer overflow), in which case an `insights.gap` event records how many were lost.
 
 ### Interfaces
 
@@ -407,6 +411,8 @@ All insights interfaces are optional. `DB` is unchanged, and implementations wit
 | `InsightsReaderProvider` | Optionally implemented by a `DB`. Returns the reader, or nil. |
 
 `ErrInsightsNotSupported` is returned when insights are not available. Queries (`InsightsCountQuery`, `InsightsStatsQuery`, `InsightsListQuery`) have a `Validate()` method enforcing shared limits, e.g. a maximum time range of 366 days and at most 2000 time buckets.
+
+Count and stats queries can group by the dimensions `bucket`, `channel`, `related_channel`, `type`, `reason`, `severity`, `route_key`, `alert_type`, `host`, `author`, `client`, `actor`, `correlation_id` and `issue` (`InsightsDimension*`). `InsightsFilter` filters on the time range (required), the list fields `ChannelIDs`, `RelatedChannelIDs`, `Types`, `Reasons`, `Severities`, `RouteKeys` and `Clients` (each at most `MaxInsightsFilterValues` values, matching any of them), and the single values `IssueID`, `CorrelationID` and `ActorID`. Events without a client (e.g. `channel.stats`, `insights.gap`) never match a `Clients` filter.
 
 Count and stats queries return at most `MaxInsightsRows` (10,000) groups. With an explicit `Limit` (e.g. top-N), further groups are silently dropped. Without one, a query matching more groups fails with `ErrInsightsTooManyRows` rather than returning a truncated result.
 

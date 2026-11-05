@@ -69,6 +69,9 @@ const (
 	// InsightsDimensionAuthor groups by [InsightsEvent.Author].
 	InsightsDimensionAuthor InsightsDimension = "author"
 
+	// InsightsDimensionClient groups by [InsightsEvent.Client].
+	InsightsDimensionClient InsightsDimension = "client"
+
 	// InsightsDimensionActor groups by [InsightsEvent.ActorID].
 	InsightsDimensionActor InsightsDimension = "actor"
 
@@ -84,7 +87,7 @@ func (d InsightsDimension) IsValid() bool {
 	switch d {
 	case InsightsDimensionBucket, InsightsDimensionChannel, InsightsDimensionRelatedChannel, InsightsDimensionType,
 		InsightsDimensionReason, InsightsDimensionSeverity, InsightsDimensionRouteKey, InsightsDimensionAlertType,
-		InsightsDimensionHost, InsightsDimensionAuthor, InsightsDimensionActor, InsightsDimensionCorrelationID,
+		InsightsDimensionHost, InsightsDimensionAuthor, InsightsDimensionClient, InsightsDimensionActor, InsightsDimensionCorrelationID,
 		InsightsDimensionIssue:
 		return true
 	default:
@@ -157,6 +160,10 @@ type InsightsFilter struct {
 	// RouteKeys matches [InsightsEvent.RouteKey].
 	RouteKeys []string
 
+	// Clients matches [InsightsEvent.Client]. Events without a client (e.g. channel stats) never match a
+	// non-empty Clients filter.
+	Clients []string
+
 	// IssueID matches [InsightsEvent.IssueID].
 	IssueID string
 
@@ -188,6 +195,7 @@ func (f *InsightsFilter) Validate() error {
 		"reasons":             len(f.Reasons),
 		"severities":          len(f.Severities),
 		"route keys":          len(f.RouteKeys),
+		"clients":             len(f.Clients),
 	} {
 		if n > MaxInsightsFilterValues {
 			return fmt.Errorf("too many %s in filter: %d (max %d)", name, n, MaxInsightsFilterValues)
@@ -380,6 +388,7 @@ type InsightsGroupKey struct {
 	AlertType        string            `json:"alertType,omitempty"`
 	Host             string            `json:"host,omitempty"`
 	Author           string            `json:"author,omitempty"`
+	Client           string            `json:"client,omitempty"`
 	ActorID          string            `json:"actorId,omitempty"`
 	CorrelationID    string            `json:"correlationId,omitempty"`
 	IssueID          string            `json:"issueId,omitempty"`

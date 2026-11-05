@@ -284,6 +284,10 @@ const (
 // InsightsMaxDetailLen is the maximum length of [InsightsEvent.Detail]. Longer values are truncated by [InsightsEvent.Normalize].
 const InsightsMaxDetailLen = 200
 
+// InsightsMaxClientLen is the maximum length (in characters) of [InsightsEvent.Client]. Longer values are truncated by
+// [InsightsEvent.Normalize]. Cleaned alerts never exceed it, but alerts rejected before cleaning may.
+const InsightsMaxClientLen = MaxClientLength
+
 // InsightsEvent is a structured record of something the Slack Manager did, used for dashboards and reporting.
 //
 // Events carry identifiers and classifications only, never alert content such as headers, texts or fields.
@@ -330,6 +334,10 @@ type InsightsEvent struct {
 	// Author is the alert author.
 	Author string `json:"author,omitempty"`
 
+	// Client is the effective client of the alert, or of the last alert of the issue (see [Alert.EffectiveClient]).
+	// It is empty for events that do not relate to an alert or issue. At most [InsightsMaxClientLen] characters.
+	Client string `json:"client,omitempty"`
+
 	// ActorID is the Slack user ID of the user who caused the event (commands).
 	ActorID string `json:"actorId,omitempty"`
 
@@ -348,7 +356,8 @@ type InsightsEvent struct {
 }
 
 // Normalize prepares the event for storage: it sets Time to now (in UTC) if zero, converts Time to UTC,
-// and truncates Detail to [InsightsMaxDetailLen] characters. It is called by recorders before writing.
+// truncates Detail to [InsightsMaxDetailLen] bytes and Client to [InsightsMaxClientLen] characters, without
+// splitting multi-byte characters. It is called by recorders before writing.
 func (e *InsightsEvent) Normalize(now time.Time) {
 	if e.Time.IsZero() {
 		e.Time = now
@@ -359,6 +368,8 @@ func (e *InsightsEvent) Normalize(now time.Time) {
 	if len(e.Detail) > InsightsMaxDetailLen {
 		e.Detail = truncateUTF8(e.Detail, InsightsMaxDetailLen)
 	}
+
+	e.Client = truncateString(e.Client, InsightsMaxClientLen)
 }
 
 // truncateUTF8 truncates s to at most maxBytes bytes, without splitting a multi-byte UTF-8 character.

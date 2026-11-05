@@ -29,6 +29,8 @@ func TestInsightsFilter_Validate(t *testing.T) {
 		{"to equal to from", func(f *types.InsightsFilter) { f.To = f.From }, "to must be after from"},
 		{"range too long", func(f *types.InsightsFilter) { f.To = f.From.Add(types.MaxInsightsQueryRange + time.Hour) }, "time range must not exceed"},
 		{"too many channels", func(f *types.InsightsFilter) { f.ChannelIDs = make([]string, types.MaxInsightsFilterValues+1) }, "too many channel IDs"},
+		{"too many clients", func(f *types.InsightsFilter) { f.Clients = make([]string, types.MaxInsightsFilterValues+1) }, "too many clients"},
+		{"max clients", func(f *types.InsightsFilter) { f.Clients = make([]string, types.MaxInsightsFilterValues) }, ""},
 		{"too many types", func(f *types.InsightsFilter) {
 			f.Types = make([]types.InsightsEventType, types.MaxInsightsFilterValues+1)
 		}, "too many types"},
@@ -181,8 +183,8 @@ func TestInsightsDimensionAndAggregate_IsValid(t *testing.T) {
 		types.InsightsDimensionBucket, types.InsightsDimensionChannel, types.InsightsDimensionRelatedChannel,
 		types.InsightsDimensionType, types.InsightsDimensionReason, types.InsightsDimensionSeverity,
 		types.InsightsDimensionRouteKey, types.InsightsDimensionAlertType, types.InsightsDimensionHost,
-		types.InsightsDimensionAuthor, types.InsightsDimensionActor, types.InsightsDimensionCorrelationID,
-		types.InsightsDimensionIssue,
+		types.InsightsDimensionAuthor, types.InsightsDimensionClient, types.InsightsDimensionActor,
+		types.InsightsDimensionCorrelationID, types.InsightsDimensionIssue,
 	} {
 		assert.True(t, d.IsValid(), d)
 	}

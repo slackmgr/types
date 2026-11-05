@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `Alert.Client` (`json:"client,omitempty"`): optional, free-form identifier of the client (monitoring tool or integration) that produced the alert. Used only for grouping, filtering and reporting (insights and dashboards), never for routing or Slack rendering. Trimmed and truncated at `MaxClientLength` (100) characters by `Clean()`
+- `Alert.EffectiveClient()`: the trimmed `Client`, else the trimmed `Username`, else `UnknownClient` (`"unknown"`). The `Username` fallback is permanent, supported behaviour
+- Constants `MaxClientLength`, `UnknownClient` and `InsightsMaxClientLen`
+- `InsightsEvent.Client` (the effective client of the alert or issue), truncated to `InsightsMaxClientLen` characters by `Normalize`
+- `InsightsDimensionClient`, `InsightsFilter.Clients` (at most `MaxInsightsFilterValues` values) and `InsightsGroupKey.Client`
+- `dbtests`: the DB suite checks that `Alert.Client` round-trips through issues, and the insights suite covers the client field, filter and dimension
+
 ## [0.10.2] - 2026-11-04
 
 ### Changed

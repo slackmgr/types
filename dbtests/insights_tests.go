@@ -59,6 +59,7 @@ func TestInsightsWriteAndList(t *testing.T, sink types.InsightsSink, reader type
 		AlertType:        "type-1",
 		Host:             "host-1",
 		Author:           "author-1",
+		Client:           "client-1",
 		ActorID:          "U123",
 		ActorName:        "Jane Doe",
 		Count:            42,
@@ -92,6 +93,7 @@ func TestInsightsWriteAndList(t *testing.T, sink types.InsightsSink, reader type
 	assert.Equal(t, minimal.ChannelID, gotMinimal.ChannelID)
 	assert.Empty(t, gotMinimal.Reason)
 	assert.Empty(t, gotMinimal.Values)
+	assert.Empty(t, gotMinimal.Client)
 
 	// Descending order
 	query.Descending = true
@@ -292,7 +294,7 @@ func TestInsightsCountFilters(t *testing.T, sink types.InsightsSink, reader type
 	matching := types.InsightsEvent{
 		Time: base.Add(time.Minute), Type: types.InsightsEventIssueMoved, Reason: types.InsightsReasonUser, ChannelID: channel,
 		RelatedChannelID: "C_TARGET", IssueID: "issue-x", CorrelationID: "corr-x", Severity: types.AlertWarning,
-		RouteKey: "rk-x", ActorID: "U_X", Host: "h", Author: "a", AlertType: "t",
+		RouteKey: "rk-x", ActorID: "U_X", Host: "h", Author: "a", AlertType: "t", Client: "client-x",
 	}
 	other := types.InsightsEvent{Time: base.Add(2 * time.Minute), Type: types.InsightsEventIssueCreated, ChannelID: channel, Severity: types.AlertError}
 
@@ -311,6 +313,7 @@ func TestInsightsCountFilters(t *testing.T, sink types.InsightsSink, reader type
 		{"related channels", func(f *types.InsightsFilter) { f.RelatedChannelIDs = []string{"C_TARGET"} }},
 		{"severities", func(f *types.InsightsFilter) { f.Severities = []types.AlertSeverity{types.AlertWarning} }},
 		{"route keys", func(f *types.InsightsFilter) { f.RouteKeys = []string{"rk-x"} }},
+		{"clients", func(f *types.InsightsFilter) { f.Clients = []string{"client-x", "client-other"} }},
 		{"issue ID", func(f *types.InsightsFilter) { f.IssueID = "issue-x" }},
 		{"correlation ID", func(f *types.InsightsFilter) { f.CorrelationID = "corr-x" }},
 		{"actor ID", func(f *types.InsightsFilter) { f.ActorID = "U_X" }},
@@ -336,15 +339,39 @@ func TestInsightsCountFilters(t *testing.T, sink types.InsightsSink, reader type
 			InsightsGrouping: types.InsightsGrouping{GroupBy: []types.InsightsDimension{
 				types.InsightsDimensionRelatedChannel, types.InsightsDimensionSeverity, types.InsightsDimensionRouteKey,
 				types.InsightsDimensionAlertType, types.InsightsDimensionHost, types.InsightsDimensionAuthor,
-				types.InsightsDimensionActor, types.InsightsDimensionCorrelationID,
+				types.InsightsDimensionClient, types.InsightsDimensionActor, types.InsightsDimensionCorrelationID,
 			}},
 		})
 
 		require.Len(t, rows, 1)
 		assert.Equal(t, types.InsightsGroupKey{
 			RelatedChannelID: "C_TARGET", Severity: types.AlertWarning, RouteKey: "rk-x", AlertType: "t",
-			Host: "h", Author: "a", ActorID: "U_X", CorrelationID: "corr-x",
+			Host: "h", Author: "a", Client: "client-x", ActorID: "U_X", CorrelationID: "corr-x",
 		}, rows[0].InsightsGroupKey)
+	})
+
+	t.Run("group by client includes events without a client", func(t *testing.T) {
+		rows := countRows(t, reader, &types.InsightsCountQuery{
+			InsightsFilter:   baseFilter(),
+			InsightsGrouping: types.InsightsGrouping{GroupBy: []types.InsightsDimension{types.InsightsDimensionClient}},
+		})
+
+		counts := map[string]int64{}
+		for _, r := range rows {
+			counts[r.Client] = r.Count
+		}
+
+		assert.Equal(t, map[string]int64{"client-x": 1, "": 1}, counts)
+	})
+
+	t.Run("list with clients filter", func(t *testing.T) {
+		f := baseFilter()
+		f.Clients = []string{"client-x"}
+
+		page, err := reader.ListInsightsEvents(ctx, &types.InsightsListQuery{InsightsFilter: f})
+		require.NoError(t, err)
+		require.Len(t, page.Events, 1)
+		assert.Equal(t, "client-x", page.Events[0].Client)
 	})
 }
 

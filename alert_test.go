@@ -340,6 +340,27 @@ func TestAlertClean(t *testing.T) {
 		assert.Equal(t, s[:types.MaxAuthorLength-3]+"...", a.Author)
 	})
 
+	t.Run("client should be trimmed", func(t *testing.T) {
+		t.Parallel()
+
+		a := types.Alert{
+			Client: "  prometheus  ",
+		}
+		a.Clean()
+		assert.Equal(t, "prometheus", a.Client)
+	})
+
+	t.Run("client should be truncated when too long", func(t *testing.T) {
+		t.Parallel()
+
+		s := randString(types.MaxClientLength+1, randGen)
+		a := types.Alert{
+			Client: s,
+		}
+		a.Clean()
+		assert.Equal(t, s[:types.MaxClientLength-3]+"...", a.Client)
+	})
+
 	t.Run("username should be truncated when too long", func(t *testing.T) {
 		t.Parallel()
 
@@ -1001,6 +1022,59 @@ func TestAlertValidation(t *testing.T) {
 	})
 }
 
+func TestAlertEffectiveClient(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		client   string
+		username string
+		want     string
+	}{
+		{"client set", "prometheus", "Prometheus Bot", "prometheus"},
+		{"client trimmed", "  grafana\t", "", "grafana"},
+		{"falls back to username", "", "Prometheus Bot", "Prometheus Bot"},
+		{"blank client falls back to trimmed username", "   ", "  Bot  ", "Bot"},
+		{"unknown when both empty", "", "", types.UnknownClient},
+		{"unknown when both blank", " ", "\n", types.UnknownClient},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			a := types.Alert{Client: tt.client, Username: tt.username}
+			assert.Equal(t, tt.want, a.EffectiveClient())
+		})
+	}
+
+	assert.Equal(t, "unknown", types.UnknownClient)
+}
+
+func TestAlertClientJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("omitted when empty", func(t *testing.T) {
+		t.Parallel()
+
+		b, err := json.Marshal(types.Alert{Header: "h"})
+		require.NoError(t, err)
+		assert.NotContains(t, string(b), `"client"`)
+	})
+
+	t.Run("round-trips when set", func(t *testing.T) {
+		t.Parallel()
+
+		b, err := json.Marshal(types.Alert{Header: "h", Client: "prometheus"})
+		require.NoError(t, err)
+		assert.Contains(t, string(b), `"client":"prometheus"`)
+
+		var a types.Alert
+		require.NoError(t, json.Unmarshal(b, &a))
+		assert.Equal(t, "prometheus", a.Client)
+	})
+}
+
 func TestAlertCleanUnicodeTruncation(t *testing.T) {
 	t.Parallel()
 
@@ -1018,6 +1092,16 @@ func TestAlertCleanUnicodeTruncation(t *testing.T) {
 		// Should truncate to 127 runes + "..." = 130 runes total
 		assert.Len(t, []rune(a.Header), 130)
 		assert.True(t, strings.HasSuffix(a.Header, "..."))
+	})
+
+	t.Run("client with unicode should truncate by rune count not bytes", func(t *testing.T) {
+		t.Parallel()
+
+		a := types.Alert{Client: strings.Repeat(multiByteChar, types.MaxClientLength+1)}
+		a.Clean()
+
+		assert.Len(t, []rune(a.Client), types.MaxClientLength)
+		assert.True(t, strings.HasSuffix(a.Client, "..."))
 	})
 
 	t.Run("text with unicode should truncate safely", func(t *testing.T) {

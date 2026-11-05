@@ -52,6 +52,23 @@ func TestInsightsEvent_Normalize(t *testing.T) {
 		assert.Len(t, e.Detail, types.InsightsMaxDetailLen-1)
 	})
 
+	t.Run("truncates long client by characters", func(t *testing.T) {
+		t.Parallel()
+
+		e := types.InsightsEvent{Client: strings.Repeat("æ", types.InsightsMaxClientLen+10)}
+		e.Normalize(now)
+		assert.Equal(t, strings.Repeat("æ", types.InsightsMaxClientLen), e.Client)
+	})
+
+	t.Run("keeps client within the limit", func(t *testing.T) {
+		t.Parallel()
+
+		client := strings.Repeat("æ", types.InsightsMaxClientLen)
+		e := types.InsightsEvent{Client: client}
+		e.Normalize(now)
+		assert.Equal(t, client, e.Client)
+	})
+
 	t.Run("keeps short detail", func(t *testing.T) {
 		t.Parallel()
 

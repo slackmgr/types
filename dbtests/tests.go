@@ -885,6 +885,14 @@ func TestSaveIssue_ComplexAlert(t *testing.T, client types.DB) {
 	assert.Equal(alert.Text, foundIssue.LastAlert.Text)
 	assert.Equal(alert.Severity, foundIssue.LastAlert.Severity)
 	assert.Len(foundIssue.LastAlert.Fields, len(alert.Fields))
+	assert.Equal("test-client", foundIssue.LastAlert.Client, "client must round-trip through the issue body")
+	assert.Equal(alert.Username, foundIssue.LastAlert.Username)
+
+	// The client must also survive loading all open issues in the channel (used by insights current state).
+	bodies, err := client.LoadOpenIssuesInChannel(ctx, channel)
+	require.NoError(err)
+	require.Contains(bodies, issue.UniqueID())
+	assert.Equal("test-client", testIssueFromJSON(bodies[issue.UniqueID()]).LastAlert.Client)
 }
 
 // TestContextCancellation tests that operations respect context cancellation.
@@ -1090,6 +1098,7 @@ func newTestAlertWithAllFields(channelID, correlationID string) *types.Alert {
 	alert.Link = "https://example.com/alert/123"
 	alert.IconEmoji = ":alert:"
 	alert.Username = "Test Alert Bot"
+	alert.Client = "test-client"
 	alert.Type = "test"
 	alert.IssueFollowUpEnabled = true
 	alert.AutoResolveSeconds = 300

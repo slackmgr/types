@@ -53,6 +53,8 @@ const (
 	MaxFooterLength = 300
 	// MaxUsernameLength is the maximum length of the bot username.
 	MaxUsernameLength = 100
+	// MaxClientLength is the maximum length of the client identifier ([Alert.Client]).
+	MaxClientLength = 100
 	// MaxFieldTitleLength is the maximum length of a field title.
 	MaxFieldTitleLength = 30
 	// MaxFieldValueLength is the maximum length of a field value.
@@ -127,6 +129,9 @@ const (
 	// MaxEscalationSlackMentionCount is the maximum number of Slack mentions per escalation.
 	MaxEscalationSlackMentionCount = 10
 )
+
+// UnknownClient is the effective client of an alert with neither Client nor Username set (see [Alert.EffectiveClient]).
+const UnknownClient = "unknown"
 
 // Alert represents a single alert that can be sent to the Slack Manager.
 // Alerts with the same CorrelationID are grouped together in issues by the Slack Manager.
@@ -234,6 +239,14 @@ type Alert struct {
 	// Username is the username that the alert should be posted as in Slack.
 	// This field is optional. If omitted, the alert is posted as the default bot user.
 	Username string `json:"username"`
+
+	// Client is an OPTIONAL identifier of the client (monitoring tool or integration) that produced the alert,
+	// such as 'prometheus', 'grafana' or 'my-batch-job'. The value is free form.
+	// It is used only for grouping, filtering and reporting (insights and dashboards), and never for routing
+	// or Slack rendering.
+	// It is automatically trimmed and truncated at MaxClientLength characters.
+	// When empty, the effective client is Username, and then [UnknownClient] (see [Alert.EffectiveClient]).
+	Client string `json:"client,omitempty"`
 
 	// IconEmoji is the emoji that the alert should be posted with in Slack, on the format ':emoji:'.
 	IconEmoji string `json:"iconEmoji"`
@@ -491,6 +504,23 @@ func (a *Alert) UniqueID() string {
 	return hash("alert", a.SlackChannelID, a.RouteKey, a.CorrelationID, a.Timestamp.UTC().Format(time.RFC3339Nano), a.Header, a.Text)
 }
 
+// EffectiveClient returns the client that produced the alert, for grouping, filtering and reporting.
+// It returns the first non-empty value, in this order:
+//  1. the trimmed [Alert.Client]
+//  2. the trimmed [Alert.Username]
+//  3. [UnknownClient]
+func (a *Alert) EffectiveClient() string {
+	if client := strings.TrimSpace(a.Client); client != "" {
+		return client
+	}
+
+	if username := strings.TrimSpace(a.Username); username != "" {
+		return username
+	}
+
+	return UnknownClient
+}
+
 // Clean normalizes and sanitizes all alert fields.
 // It trims whitespace, normalizes case where appropriate, truncates certain fields that exceed maximum lengths,
 // and applies default values for empty or invalid fields (e.g., sets Severity to 'error' if empty).
@@ -526,6 +556,9 @@ func (a *Alert) Clean() {
 
 	a.Username = strings.TrimSpace(a.Username)
 	a.Username = truncateStringIfNeeded(a.Username, MaxUsernameLength)
+
+	a.Client = strings.TrimSpace(a.Client)
+	a.Client = truncateStringIfNeeded(a.Client, MaxClientLength)
 
 	a.Author = strings.TrimSpace(a.Author)
 	a.Author = truncateStringIfNeeded(a.Author, MaxAuthorLength)
