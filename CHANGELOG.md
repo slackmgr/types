@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-05
+
 ### Added
 - `Alert.Client` (`json:"client,omitempty"`): optional, free-form identifier of the client (monitoring tool or integration) that produced the alert. Used only for grouping, filtering and reporting (insights and dashboards), never for routing or Slack rendering. Trimmed and truncated at `MaxClientLength` (100) characters by `Clean()`
 - `Alert.EffectiveClient()`: the trimmed `Client`, else the trimmed `Username`, else `UnknownClient` (`"unknown"`). The `Username` fallback is permanent, supported behaviour
@@ -167,7 +169,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/slackmgr/types/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/slackmgr/types/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/slackmgr/types/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/slackmgr/types/compare/v0.9.0...v0.10.0
