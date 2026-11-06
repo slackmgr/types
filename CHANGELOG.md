@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-06
+
+### Added
+- `InsightsEventAlertFireAndForget` (`alert.fire_and_forget`): alert outcome for a fire-and-forget notification (an alert with follow-up disabled, including every new info alert). It replaces `alert.new_issue`, `issue.created` and `issue.archived` for such alerts
+
+### Changed
+- Documented that issues are always issues with follow-up: fire-and-forget notifications are not issues, never produce issue events, and are never counted as open, alerting, resolved or archived (`InsightsValueOpen` and the other channel stats values, `ChannelProcessingState.OpenIssues`, `Alert.IssueFollowUpEnabled`)
+- `InsightsReasonFollowUpDisabled` is documented as a repeated alert for a recent fire-and-forget notification
+
+### Deprecated
+- `InsightsReasonFireAndForget`: fire-and-forget notifications are no longer archived with an `issue.archived` event. The reason only appears in events recorded by older versions
+
 ## [0.11.0] - 2026-11-05
 
 ### Added
@@ -169,7 +181,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/slackmgr/types/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/slackmgr/types/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/slackmgr/types/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/slackmgr/types/compare/v0.10.0...v0.10.1
