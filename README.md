@@ -141,7 +141,7 @@ func NewInfoAlert() *Alert      // Severity: info
 | `Text` | `string` | Alert body (max 10,000 chars, auto-truncated) |
 | `SlackChannelID` | `string` | Target Slack channel ID or name |
 | `RouteKey` | `string` | Alternative routing via configured routes |
-| `IssueFollowUpEnabled` | `bool` | Whether to track this alert as an issue |
+| `IssueFollowUpEnabled` | `bool` | Whether to track this alert as an issue. If false (always for new info alerts), the alert is a fire-and-forget notification: a Slack post only, never counted as an issue |
 | `AutoResolveSeconds` | `int` | Auto-resolve after N seconds (30 - 63,113,851) |
 | `Webhooks` | `[]*Webhook` | Interactive buttons (max 5) |
 | `Escalation` | `[]*Escalation` | Escalation points (max 3) |
@@ -362,7 +362,7 @@ type ChannelProcessingState struct {
     Created             time.Time // When processing state was created
     LastChannelActivity time.Time // Last activity in channel
     LastProcessed       time.Time // When channel was last processed
-    OpenIssues          int       // Number of open issues
+    OpenIssues          int       // Number of open issues (excluding fire-and-forget notifications)
 }
 ```
 

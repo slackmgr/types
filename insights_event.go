@@ -9,9 +9,18 @@ import "time"
 type InsightsEventType string
 
 // Alert outcome events, recorded by the manager. Each processing attempt of a queued alert produces exactly one of these.
+//
+// Issues are always issues with follow-up. An alert with follow-up disabled (including any new info alert) is a
+// fire-and-forget notification, recorded as [InsightsEventAlertFireAndForget]. Fire-and-forget notifications are not
+// issues: they never produce issue events, and are never counted as open, alerting, resolved or archived.
 const (
 	// InsightsEventAlertNewIssue means the alert finished processing (acked as successful) and opened a new issue.
 	InsightsEventAlertNewIssue InsightsEventType = "alert.new_issue"
+
+	// InsightsEventAlertFireAndForget means the alert finished processing and created a fire-and-forget notification
+	// (a Slack post without follow-up). No issue is opened, and no issue events are recorded. Later alerts with the
+	// same correlation ID are ignored for a short while ([InsightsReasonFollowUpDisabled]).
+	InsightsEventAlertFireAndForget InsightsEventType = "alert.fire_and_forget"
 
 	// InsightsEventAlertGrouped means the alert finished processing and changed an existing open issue.
 	InsightsEventAlertGrouped InsightsEventType = "alert.grouped"
@@ -50,7 +59,8 @@ const (
 	InsightsEventAlertRejected InsightsEventType = "alert.rejected"
 )
 
-// Issue lifecycle events, recorded by the manager.
+// Issue lifecycle events, recorded by the manager. They are never recorded for fire-and-forget notifications
+// (see [InsightsEventAlertFireAndForget]).
 const (
 	// InsightsEventIssueCreated means a new issue was created and saved.
 	InsightsEventIssueCreated InsightsEventType = "issue.created"
@@ -138,7 +148,7 @@ const (
 	// InsightsReasonAlreadyResolved means a resolved alert arrived for an issue that was already resolved.
 	InsightsReasonAlreadyResolved = "already_resolved"
 
-	// InsightsReasonFollowUpDisabled means the matching issue has issue follow-up disabled, so new alerts are ignored.
+	// InsightsReasonFollowUpDisabled means the alert matched a recent fire-and-forget notification, so it was ignored.
 	InsightsReasonFollowUpDisabled = "follow_up_disabled"
 
 	// InsightsReasonResolvedWithoutIssue means a resolved alert arrived while no open issue existed.
@@ -214,6 +224,10 @@ const (
 	InsightsReasonTerminated = "terminated"
 
 	// InsightsReasonFireAndForget means the issue had follow-up disabled and was archived after its archiving delay.
+	//
+	// Deprecated: fire-and-forget notifications are not issues, and are no longer archived with an
+	// [InsightsEventIssueArchived] event (see [InsightsEventAlertFireAndForget]). The reason only appears in events
+	// recorded by older versions.
 	InsightsReasonFireAndForget = "fire_and_forget"
 )
 
@@ -259,7 +273,8 @@ const (
 	// InsightsValueNotificationDelaySeconds is the configured notification delay of a new issue, in seconds ([InsightsEventIssueCreated]).
 	InsightsValueNotificationDelaySeconds = "notification_delay_s"
 
-	// InsightsValueOpen is the number of open (non-archived) issues ([InsightsEventChannelStats]).
+	// InsightsValueOpen is the number of open (non-archived) issues ([InsightsEventChannelStats]). Fire-and-forget
+	// notifications are not issues, and are not counted here or in any other channel stats value.
 	InsightsValueOpen = "open"
 
 	// InsightsValueAlerting is the number of open issues that are neither resolved nor info ([InsightsEventChannelStats]).

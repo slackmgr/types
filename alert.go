@@ -200,8 +200,9 @@ type Alert struct {
 	// IssueFollowUpEnabled controls whether the issue is tracked after the initial Slack post.
 	// If true, the issue will be automatically resolved after AutoResolveSeconds seconds (or immediately if severity is 'resolved').
 	// Users can also manually resolve, investigate, or mute the issue via Slack reactions.
-	// If false, a Slack post is still created, but the issue is automatically archived approximately 30 seconds after
-	// the last alert and cannot be resolved or investigated. This is suitable for fire-and-forget notifications.
+	// If false, the alert is a fire-and-forget notification: a Slack post is created, but no issue is tracked. The post
+	// cannot be resolved or investigated, and repeated alerts with the same correlation ID are ignored for approximately
+	// 30 seconds. Fire-and-forget notifications are never counted as open, alerting, resolved or archived issues.
 	// Note: if true and severity is 'info', follow-up is silently disabled (info alerts are inherently fire-and-forget).
 	IssueFollowUpEnabled bool `json:"issueFollowUpEnabled"`
 

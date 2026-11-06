@@ -13,7 +13,9 @@ type ChannelProcessingState struct {
 	Created             time.Time `json:"created"`
 	LastChannelActivity time.Time `json:"lastChannelActivity"`
 	LastProcessed       time.Time `json:"lastProcessed"`
-	OpenIssues          int       `json:"openIssues"`
+	// OpenIssues is the number of open issues in the channel at the last processing run, before archiving.
+	// Fire-and-forget notifications are not issues, and are not counted.
+	OpenIssues int `json:"openIssues"`
 }
 
 func NewChannelProcessingState(channelID string) *ChannelProcessingState {
