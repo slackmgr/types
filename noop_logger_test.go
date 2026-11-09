@@ -14,11 +14,11 @@ func TestNoopLogger(t *testing.T) {
 
 	// Ensure methods can be called without errors or panics
 	m.Debug("")
-	m.Debugf("", nil)
+	m.Debugf("%v", nil)
 	m.Info("")
-	m.Infof("", nil)
+	m.Infof("%v", nil)
 	m.Error("")
-	m.Errorf("", nil)
+	m.Errorf("%v", nil)
 	m.WithField("", nil)
 	m.WithFields(nil)
 }
