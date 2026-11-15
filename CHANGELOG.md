@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-15
+
 ### Changed
 - `Alert` and its nested types (`Field`, `Escalation`, `Webhook`, `WebhookPlainTextInput`, `WebhookCheckboxInput`, `WebhookCheckboxOption`, `WebhookAfterClick`) omit zero-valued fields from JSON (`omitzero`). Decoding is unchanged: a missing field is the zero value, as before, so old and new JSON are compatible in both directions. Clients no longer send empty strings for unset enum fields such as `severity` or `buttonStyle`
+- Lint checks the format strings of `types.Logger` methods (`Debugf`, `Infof`, `Errorf`) like `fmt.Printf`
 
 ## [0.12.0] - 2026-11-06
 
@@ -184,7 +187,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See git history for changes in v0.1.4 and earlier versions.
 
-[Unreleased]: https://github.com/slackmgr/types/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/slackmgr/types/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/slackmgr/types/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/slackmgr/types/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/slackmgr/types/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/slackmgr/types/compare/v0.10.1...v0.10.2
