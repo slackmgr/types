@@ -137,65 +137,65 @@ const UnknownClient = "unknown"
 // Alerts with the same CorrelationID are grouped together in issues by the Slack Manager.
 type Alert struct {
 	// Timestamp is the time when the alert was created. If the timestamp is empty (or older than 7 days), it will be replaced with the current time.
-	Timestamp time.Time `json:"timestamp"`
+	Timestamp time.Time `json:"timestamp,omitzero"`
 
 	// CorrelationID is an optional field used to group related alerts together in issues.
 	// If unset, the correlation ID is constructed by hashing [Header, Author, Host, Text, SlackChannelID].
 	// It is strongly recommended to set this to an explicit value, which makes sense in your context, rather than relying on the default hash value.
 	// With a custom correlation ID, you can update both header and text without creating a new issue.
-	CorrelationID string `json:"correlationId"`
+	CorrelationID string `json:"correlationId,omitzero"`
 
 	// Type is the type of alert, such as 'compliance', 'security' or 'metrics'.
 	// It is primarily used for routing, when the alert RouteKey field is used (rather than SlackChannelID).
 	// This field is optional, and case-insensitive.
-	Type string `json:"type"`
+	Type string `json:"type,omitzero"`
 
 	// Header is the main header (title) of the alert.
 	// It is automatically truncated at MaxHeaderLength characters.
 	// Include :status: in the header (or text) to have it replaced with the appropriate emoji for the issue severity.
 	// This field is optional, but Header and Text cannot both be empty.
-	Header string `json:"header"`
+	Header string `json:"header,omitzero"`
 
 	// HeaderWhenResolved is the main header (title) of the issue when in a resolved or info state.
 	// It is automatically truncated at MaxHeaderLength characters.
 	// This field is optional. If unset, the Header field is used for all issue states.
-	HeaderWhenResolved string `json:"headerWhenResolved"`
+	HeaderWhenResolved string `json:"headerWhenResolved,omitzero"`
 
 	// Text is the main text (body) of the alert.
 	// It is automatically truncated at MaxTextLength characters.
 	// Include :status: in the text (or header) to have it replaced with the appropriate emoji for the issue severity.
 	// This field is optional, but Header and Text cannot both be empty.
-	Text string `json:"text"`
+	Text string `json:"text,omitzero"`
 
 	// TextWhenResolved is the main text (body) of the alert when in a resolved or info state.
 	// It is automatically truncated at MaxTextLength characters.
 	// This field is optional. If unset, the Text field is used for all issue states.
-	TextWhenResolved string `json:"textWhenResolved"`
+	TextWhenResolved string `json:"textWhenResolved,omitzero"`
 
 	// FallbackText is the text displayed in Slack notifications.
 	// It should be a short, human-readable summary of the alert, without markdown or line breaks.
 	// It is automatically truncated at MaxFallbackTextLength characters.
 	// This field is optional. If unset, Slack decides what to display in notifications (which may not always be ideal).
-	FallbackText string `json:"fallbackText"`
+	FallbackText string `json:"fallbackText,omitzero"`
 
 	// Author is the 'author' of the alert (if relevant), displayed as a context block in the Slack post.
 	// It is automatically truncated at MaxAuthorLength characters.
 	// This field is optional.
-	Author string `json:"author"`
+	Author string `json:"author,omitzero"`
 
 	// Host is the 'host' on which the alert originated (if any), displayed as a context block in the Slack post.
 	// It is automatically truncated at MaxHostLength characters.
 	// This field is optional.
-	Host string `json:"host"`
+	Host string `json:"host,omitzero"`
 
 	// Footer is the 'footer' of the alert, displayed as a context block at the bottom of the Slack post.
 	// It is automatically truncated at MaxFooterLength characters.
 	// This field is optional.
-	Footer string `json:"footer"`
+	Footer string `json:"footer,omitzero"`
 
 	// Link is an optional link (url) to more information about the alert, displayed as a context block in the Slack post.
 	// This field is optional, but if set, it must be a valid absolute URL, starting with http:// or https://
-	Link string `json:"link"`
+	Link string `json:"link,omitzero"`
 
 	// IssueFollowUpEnabled controls whether the issue is tracked after the initial Slack post.
 	// If true, the issue will be automatically resolved after AutoResolveSeconds seconds (or immediately if severity is 'resolved').
@@ -204,23 +204,23 @@ type Alert struct {
 	// cannot be resolved or investigated, and repeated alerts with the same correlation ID are ignored for approximately
 	// 30 seconds. Fire-and-forget notifications are never counted as open, alerting, resolved or archived issues.
 	// Note: if true and severity is 'info', follow-up is silently disabled (info alerts are inherently fire-and-forget).
-	IssueFollowUpEnabled bool `json:"issueFollowUpEnabled"`
+	IssueFollowUpEnabled bool `json:"issueFollowUpEnabled,omitzero"`
 
 	// AutoResolveSeconds is the number of seconds after which the issue should be automatically resolved, if IssueFollowUpEnabled is true.
 	// The value must be between MinAutoResolveSeconds and MaxAutoResolveSeconds.
-	AutoResolveSeconds int `json:"autoResolveSeconds"`
+	AutoResolveSeconds int `json:"autoResolveSeconds,omitzero"`
 
 	// AutoResolveAsInconclusive is a flag that determines if the issue should be automatically resolved as 'inconclusive' instead of 'resolved'.
 	// This affects which emoji is used in the Slack post when the issue is auto-resolved.
 	// It has no effect if the issue was manually resolved via a Slack reaction, or if severity is 'resolved' or 'info'.
 	// The default value is false, which means the issue is resolved with status 'resolved'.
-	AutoResolveAsInconclusive bool `json:"autoResolveAsInconclusive"`
+	AutoResolveAsInconclusive bool `json:"autoResolveAsInconclusive,omitzero"`
 
 	// Severity is the severity of the alert, such as 'panic', 'error', 'warning', 'resolved' or 'info'.
 	// This value determines the emoji used in the Slack post (for the :status: placeholder in header or text).
 	// The value must be one of the predefined AlertSeverity constants.
 	// If unset, the severity is automatically set to 'error'.
-	Severity AlertSeverity `json:"severity"`
+	Severity AlertSeverity `json:"severity,omitzero"`
 
 	// SlackChannelID is the ID of the Slack channel where the alert should be posted.
 	// Slack channel names are also accepted, and are automatically converted to channel IDs by the API.
@@ -228,18 +228,18 @@ type Alert struct {
 	// This field is optional.
 	// If both SlackChannelID and RouteKey are set, SlackChannelID takes precedence.
 	// If both SlackChannelID and RouteKey are empty, the API will still accept the alert IF a fallback mapping exists. Otherwise, it will return an error.
-	SlackChannelID string `json:"slackChannelId"`
+	SlackChannelID string `json:"slackChannelId,omitzero"`
 
 	// RouteKey is the case-insensitive route key of the alert, used for routing to the correct Slack channel by the API.
 	// The API will return an error if the route key does not match any configured route.
 	// This field is optional.
 	// If both SlackChannelID and RouteKey are set, SlackChannelID takes precedence.
 	// If both SlackChannelID and RouteKey are empty, the API will still accept the alert IF a fallback mapping exists. Otherwise, it will return an error.
-	RouteKey string `json:"routeKey"`
+	RouteKey string `json:"routeKey,omitzero"`
 
 	// Username is the username that the alert should be posted as in Slack.
 	// This field is optional. If omitted, the alert is posted as the default bot user.
-	Username string `json:"username"`
+	Username string `json:"username,omitzero"`
 
 	// Client is an OPTIONAL identifier of the client (monitoring tool or integration) that produced the alert,
 	// such as 'prometheus', 'grafana' or 'my-batch-job'. The value is free form.
@@ -247,80 +247,80 @@ type Alert struct {
 	// or Slack rendering.
 	// It is automatically trimmed and truncated at MaxClientLength characters.
 	// When empty, the effective client is Username, and then [UnknownClient] (see [Alert.EffectiveClient]).
-	Client string `json:"client,omitempty"`
+	Client string `json:"client,omitzero"`
 
 	// IconEmoji is the emoji that the alert should be posted with in Slack, on the format ':emoji:'.
-	IconEmoji string `json:"iconEmoji"`
+	IconEmoji string `json:"iconEmoji,omitzero"`
 
 	// Fields are rendered in a compact format that allows for 2 columns of side-by-side text.
-	Fields []*Field `json:"fields"`
+	Fields []*Field `json:"fields,omitzero"`
 
 	// NotificationDelaySeconds is the number of seconds to wait before creating an actual Slack post.
 	// If the issue is resolved before the delay is over, no Slack post is created for the issue.
 	// This is useful for issues that may be resolved quickly, to avoid unnecessary notifications.
 	// This field only takes effect when IssueFollowUpEnabled is true.
-	NotificationDelaySeconds int `json:"notificationDelaySeconds"`
+	NotificationDelaySeconds int `json:"notificationDelaySeconds,omitzero"`
 
 	// ArchivingDelaySeconds is the number of seconds to wait before archiving the issue, after it is resolved.
 	// A non-archived issue is re-opened if a new alert with the same CorrelationID is received, and the same Slack post is updated.
 	// An archived issue can never be re-opened, and any new alerts with the same CorrelationID will generate a new issue and new Slack post.
-	ArchivingDelaySeconds int `json:"archivingDelaySeconds"`
+	ArchivingDelaySeconds int `json:"archivingDelaySeconds,omitzero"`
 
 	// Escalation defines a list of escalation points for this alert's issue.
 	// Each escalation can increase severity, add Slack mentions, or move the issue to a different channel after a specified delay.
 	// Escalations are sorted by DelaySeconds and triggered in order if the issue remains unresolved.
 	// Maximum of MaxEscalationCount escalations allowed.
-	Escalation []*Escalation `json:"escalation"`
+	Escalation []*Escalation `json:"escalation,omitzero"`
 
 	// IgnoreIfTextContains is a list of substrings that, if found in the alert's Text field, will cause the alert to be dropped.
 	// Matching is case-insensitive. Only the Text field is checked; Header and other fields are not.
 	// This is useful for filtering out known noise or false positives.
 	// Maximum of MaxIgnoreIfTextContainsCount items, each up to MaxIgnoreIfTextContainsLength characters.
-	IgnoreIfTextContains []string `json:"ignoreIfTextContains"`
+	IgnoreIfTextContains []string `json:"ignoreIfTextContains,omitzero"`
 
 	// Webhooks defines interactive buttons that appear on the Slack post.
 	// Each webhook triggers an HTTP POST to the specified URL when clicked.
 	// Webhooks can include confirmation dialogs, input forms, and access level restrictions.
 	// Maximum of MaxWebhookCount webhooks allowed.
-	Webhooks []*Webhook `json:"webhooks"`
+	Webhooks []*Webhook `json:"webhooks,omitzero"`
 
 	// Metadata is an arbitrary key-value map for storing custom data with the alert.
 	// The Slack Manager does not interpret this data.
-	Metadata map[string]any `json:"metadata"`
+	Metadata map[string]any `json:"metadata,omitzero"`
 
 	// Deprecated: FailOnRateLimitError is no longer in use.
-	FailOnRateLimitError bool `json:"failOnRateLimitError"`
+	FailOnRateLimitError bool `json:"failOnRateLimitError,omitzero"`
 
 	// Deprecated: DeletionDelaySeconds is a legacy alias for ArchivingDelaySeconds, kept for
 	// compatibility with older clients. It is ignored unless the manager runs with legacy
 	// features enabled, in which case it is used when ArchivingDelaySeconds is not set.
 	// Use ArchivingDelaySeconds instead.
-	DeletionDelaySeconds int `json:"deletionDelaySeconds,omitempty"`
+	DeletionDelaySeconds int `json:"deletionDelaySeconds,omitzero"`
 }
 
 // Field is an alert field.
 type Field struct {
 	// Title is the title of the field. It is automatically truncated at MaxFieldTitleLength characters.
-	Title string `json:"title"`
+	Title string `json:"title,omitzero"`
 
 	// Value is the value of the field. It is automatically truncated at MaxFieldValueLength characters.
-	Value string `json:"value"`
+	Value string `json:"value,omitzero"`
 }
 
 // Escalation represents an escalation point for an issue.
 type Escalation struct {
 	// Severity is the new severity of the issue, when the escalation is triggered.
-	Severity AlertSeverity `json:"severity"`
+	Severity AlertSeverity `json:"severity,omitzero"`
 
 	// DelaySeconds is the number of seconds since the issue was created (first alert received),
 	// before the escalation is triggered.
-	DelaySeconds int `json:"delaySeconds"`
+	DelaySeconds int `json:"delaySeconds,omitzero"`
 
 	// SlackMentions is a list of Slack mentions that should be added to the Slack post when the escalation is triggered.
-	SlackMentions []string `json:"slackMentions"`
+	SlackMentions []string `json:"slackMentions,omitzero"`
 
 	// MoveToChannel is the ID or name of the Slack channel where the alert should be moved when the escalation is triggered.
-	MoveToChannel string `json:"moveToChannel"`
+	MoveToChannel string `json:"moveToChannel,omitzero"`
 }
 
 // Webhook represents an interactive button that appears on the Slack post.
@@ -330,7 +330,7 @@ type Webhook struct {
 	// ID is the unique identifier for this webhook within the alert.
 	// It must be unique among all webhooks in the same alert.
 	// Maximum length: MaxWebhookIDLength characters.
-	ID string `json:"id"`
+	ID string `json:"id,omitzero"`
 
 	// URL specifies the target for the webhook when the button is clicked.
 	// For HTTP webhooks, this must be a valid absolute URL starting with http:// or https://.
@@ -338,14 +338,14 @@ type Webhook struct {
 	// ASCII string identifier that the handler recognizes.
 	// The field name "URL" is retained for backwards compatibility.
 	// Maximum length: MaxWebhookURLLength characters.
-	URL string `json:"url"`
+	URL string `json:"url,omitzero"`
 
 	// ConfirmationText is the text displayed as the header of the confirmation dialog
 	// shown before triggering the webhook.
 	// If empty, a default header referencing the webhook URL is used.
 	// Ignored when SkipConfirmationDialog is true.
 	// Maximum length: MaxWebhookConfirmationTextLength characters.
-	ConfirmationText string `json:"confirmationText"`
+	ConfirmationText string `json:"confirmationText,omitzero"`
 
 	// SkipConfirmationDialog, when true, instructs the core manager to post the webhook
 	// without first showing a confirmation dialog to the user.
@@ -355,50 +355,50 @@ type Webhook struct {
 	// Must be false when PlainTextInput or CheckboxInput is non-empty: input fields
 	// are collected via the confirmation dialog, so skipping the dialog leaves nowhere
 	// to render them.
-	SkipConfirmationDialog bool `json:"skipConfirmationDialog"`
+	SkipConfirmationDialog bool `json:"skipConfirmationDialog,omitzero"`
 
 	// ButtonText is the label displayed on the button in Slack.
 	// This field is required.
 	// Maximum length: MaxWebhookButtonTextLength characters.
-	ButtonText string `json:"buttonText"`
+	ButtonText string `json:"buttonText,omitzero"`
 
 	// ButtonStyle determines the visual appearance of the button in Slack.
 	// Valid values are defined by WebhookButtonStyle constants.
 	// If empty, defaults to WebhookButtonStyleDefault.
 	// When set to WebhookButtonStyleDanger, SkipConfirmationDialog must be false.
-	ButtonStyle WebhookButtonStyle `json:"buttonStyle"`
+	ButtonStyle WebhookButtonStyle `json:"buttonStyle,omitzero"`
 
 	// AccessLevel controls who can click this webhook button.
 	// Valid values are defined by WebhookAccessLevel constants.
 	// If empty, defaults to WebhookAccessLevelGlobalAdmins.
-	AccessLevel WebhookAccessLevel `json:"accessLevel"`
+	AccessLevel WebhookAccessLevel `json:"accessLevel,omitzero"`
 
 	// DisplayMode controls when the webhook button is visible.
 	// Valid values are defined by WebhookDisplayMode constants.
 	// If empty, behaves like WebhookDisplayModeOpenIssue (hidden when the issue is resolved).
-	DisplayMode WebhookDisplayMode `json:"displayMode"`
+	DisplayMode WebhookDisplayMode `json:"displayMode,omitzero"`
 
 	// Payload is a map of static key-value pairs sent back in WebhookCallback.Payload when the webhook fires.
 	// This data is defined at alert creation time and is not modified at runtime.
 	// Maximum of MaxWebhookPayloadCount items.
-	Payload map[string]any `json:"payload"`
+	Payload map[string]any `json:"payload,omitzero"`
 
 	// PlainTextInput defines text input fields shown in the webhook's modal dialog before the webhook fires.
 	// User-entered values are sent back in WebhookCallback.PlainTextInput, keyed by each input's ID.
 	// Maximum of MaxWebhookPlainTextInputCount inputs.
 	// Must be empty when SkipConfirmationDialog is true.
-	PlainTextInput []*WebhookPlainTextInput `json:"plainTextInput"`
+	PlainTextInput []*WebhookPlainTextInput `json:"plainTextInput,omitzero"`
 
 	// CheckboxInput defines checkbox groups shown in the webhook's modal dialog before the webhook fires.
 	// Selected option values are sent back in WebhookCallback.CheckboxInput, keyed by each input's ID.
 	// Maximum of MaxWebhookCheckboxInputCount inputs.
 	// Must be empty when SkipConfirmationDialog is true.
-	CheckboxInput []*WebhookCheckboxInput `json:"checkboxInput"`
+	CheckboxInput []*WebhookCheckboxInput `json:"checkboxInput,omitzero"`
 
 	// AfterClick optionally describes how the Slack post changes after the button was clicked and the webhook was
 	// delivered, e.g. hiding buttons and showing a status text, until the next alert for the issue is received.
 	// If nil, the Slack post is not changed.
-	AfterClick *WebhookAfterClick `json:"afterClick,omitempty"`
+	AfterClick *WebhookAfterClick `json:"afterClick,omitzero"`
 }
 
 // WebhookPlainTextInput represents a text input field in a webhook's modal dialog.
@@ -408,28 +408,28 @@ type WebhookPlainTextInput struct {
 	// It must be unique among all inputs (both text and checkbox) in the same webhook.
 	// The ID is used as the key in WebhookCallback.PlainTextInput.
 	// Maximum length: MaxWebhookInputIDLength characters.
-	ID string `json:"id"`
+	ID string `json:"id,omitzero"`
 
 	// Description is the label shown above the input field.
 	// Maximum length: MaxWebhookInputDescriptionLength characters.
-	Description string `json:"description"`
+	Description string `json:"description,omitzero"`
 
 	// MinLength is the minimum number of characters required for the input.
 	// Zero makes the input optional, i.e. the user can leave it empty. Any other value makes it required.
 	// Must be >= 0 and <= MaxLength.
-	MinLength int `json:"minLength"`
+	MinLength int `json:"minLength,omitzero"`
 
 	// MaxLength is the maximum number of characters allowed for the input.
 	// Must be >= MinLength and <= MaxWebhookInputTextLength.
-	MaxLength int `json:"maxLength"`
+	MaxLength int `json:"maxLength,omitzero"`
 
 	// Multiline determines whether the input field allows multiple lines of text.
 	// If true, a larger textarea is shown instead of a single-line input.
-	Multiline bool `json:"multiline"`
+	Multiline bool `json:"multiline,omitzero"`
 
 	// InitialValue is the default text pre-filled in the input field.
 	// Must satisfy the MinLength and MaxLength constraints.
-	InitialValue string `json:"initialValue"`
+	InitialValue string `json:"initialValue,omitzero"`
 }
 
 // WebhookCheckboxInput represents a group of checkboxes in a webhook's modal dialog.
@@ -439,15 +439,15 @@ type WebhookCheckboxInput struct {
 	// It must be unique among all inputs (both text and checkbox) in the same webhook.
 	// The ID is used as the key in WebhookCallback.CheckboxInput.
 	// Maximum length: MaxWebhookInputIDLength characters.
-	ID string `json:"id"`
+	ID string `json:"id,omitzero"`
 
 	// Label is the text displayed above the checkbox group.
 	// Maximum length: MaxWebhookInputLabelLength characters.
-	Label string `json:"label"`
+	Label string `json:"label,omitzero"`
 
 	// Options is the list of checkbox options available in this group.
 	// Maximum of MaxWebhookCheckboxOptionCount options.
-	Options []*WebhookCheckboxOption `json:"options"`
+	Options []*WebhookCheckboxOption `json:"options,omitzero"`
 }
 
 // WebhookCheckboxOption represents a single checkbox option within a WebhookCheckboxInput.
@@ -455,14 +455,14 @@ type WebhookCheckboxOption struct {
 	// Value is the value included in WebhookCallback.CheckboxInput when this option is selected.
 	// Must be unique among all options in the same checkbox group.
 	// Maximum length: MaxCheckboxOptionValueLength characters.
-	Value string `json:"value"`
+	Value string `json:"value,omitzero"`
 
 	// Text is the label displayed next to the checkbox.
 	// Maximum length: MaxWebhookCheckboxOptionTextLength characters.
-	Text string `json:"text"`
+	Text string `json:"text,omitzero"`
 
 	// Selected determines whether this checkbox is pre-selected when the modal opens.
-	Selected bool `json:"selected"`
+	Selected bool `json:"selected,omitzero"`
 }
 
 // NewPanicAlert returns an alert with the severity set to 'panic'

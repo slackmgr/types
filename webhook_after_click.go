@@ -64,22 +64,22 @@ type WebhookAfterClick struct {
 	// HideButtons controls which webhook buttons are hidden.
 	// Valid values are defined by WebhookHideButtons constants.
 	// If empty, defaults to WebhookHideButtonsNone.
-	HideButtons WebhookHideButtons `json:"hideButtons"`
+	HideButtons WebhookHideButtons `json:"hideButtons,omitzero"`
 
 	// HideWebhookIDs lists additional webhooks (by ID) whose buttons are hidden.
 	// Each ID must match a webhook in the same alert. Ignored when HideButtons is WebhookHideButtonsAll.
 	// Maximum of MaxWebhookCount items.
-	HideWebhookIDs []string `json:"hideWebhookIds"`
+	HideWebhookIDs []string `json:"hideWebhookIds,omitzero"`
 
 	// StatusText is an optional text shown on the Slack post, e.g. "Restart in progress, the alert will be updated
 	// when done". The clicking user and time are added by Slack Manager.
 	// Maximum length: MaxWebhookAfterClickStatusTextLength characters.
-	StatusText string `json:"statusText"`
+	StatusText string `json:"statusText,omitzero"`
 
 	// ResetAfterSeconds is the maximum time the post-click state is kept if no new alert is received.
 	// If 0, defaults to DefaultWebhookAfterClickResetSeconds.
 	// Must be >=0 and <=MaxWebhookAfterClickResetSeconds.
-	ResetAfterSeconds int `json:"resetAfterSeconds"`
+	ResetAfterSeconds int `json:"resetAfterSeconds,omitzero"`
 }
 
 // ResetAfter returns the reset delay, i.e. ResetAfterSeconds, or [DefaultWebhookAfterClickResetSeconds] if it is 0.

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `Alert` and its nested types (`Field`, `Escalation`, `Webhook`, `WebhookPlainTextInput`, `WebhookCheckboxInput`, `WebhookCheckboxOption`, `WebhookAfterClick`) omit zero-valued fields from JSON (`omitzero`). Decoding is unchanged: a missing field is the zero value, as before, so old and new JSON are compatible in both directions. Clients no longer send empty strings for unset enum fields such as `severity` or `buttonStyle`
+
 ## [0.12.0] - 2026-11-06
 
 ### Added

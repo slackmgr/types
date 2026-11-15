@@ -1075,6 +1075,88 @@ func TestAlertClientJSON(t *testing.T) {
 	})
 }
 
+func TestAlertJSONOmitsZeroValues(t *testing.T) {
+	t.Parallel()
+
+	t.Run("zero alert marshals to an empty object", func(t *testing.T) {
+		t.Parallel()
+
+		b, err := json.Marshal(types.Alert{})
+		require.NoError(t, err)
+		assert.JSONEq(t, `{}`, string(b))
+	})
+
+	t.Run("zero nested values are omitted", func(t *testing.T) {
+		t.Parallel()
+
+		a := types.Alert{
+			Header:     "h",
+			Fields:     []*types.Field{{}},
+			Escalation: []*types.Escalation{{}},
+			Webhooks: []*types.Webhook{{
+				PlainTextInput: []*types.WebhookPlainTextInput{{}},
+				CheckboxInput:  []*types.WebhookCheckboxInput{{Options: []*types.WebhookCheckboxOption{{}}}},
+				AfterClick:     &types.WebhookAfterClick{},
+			}},
+		}
+
+		b, err := json.Marshal(a)
+		require.NoError(t, err)
+		assert.JSONEq(t, `{"header":"h","fields":[{}],"escalation":[{}],"webhooks":[{"plainTextInput":[{}],"checkboxInput":[{"options":[{}]}],"afterClick":{}}]}`, string(b))
+	})
+
+	t.Run("round-trips all fields", func(t *testing.T) {
+		t.Parallel()
+
+		a := types.Alert{
+			Timestamp:                 time.Date(2026, 11, 15, 10, 0, 0, 0, time.UTC),
+			CorrelationID:             "c",
+			Type:                      "t",
+			Header:                    "h",
+			HeaderWhenResolved:        "hr",
+			Text:                      "x",
+			TextWhenResolved:          "xr",
+			FallbackText:              "f",
+			Author:                    "a",
+			Host:                      "ho",
+			Footer:                    "fo",
+			Link:                      "https://example.com",
+			IssueFollowUpEnabled:      true,
+			AutoResolveSeconds:        60,
+			AutoResolveAsInconclusive: true,
+			Severity:                  types.AlertWarning,
+			SlackChannelID:            "C123",
+			RouteKey:                  "r",
+			Username:                  "u",
+			Client:                    "cl",
+			IconEmoji:                 ":fire:",
+			Fields:                    []*types.Field{{Title: "t", Value: "v"}},
+			NotificationDelaySeconds:  10,
+			ArchivingDelaySeconds:     20,
+			Escalation:                []*types.Escalation{{Severity: types.AlertPanic, DelaySeconds: 60, SlackMentions: []string{"<!here>"}, MoveToChannel: "C456"}},
+			IgnoreIfTextContains:      []string{"noise"},
+			Webhooks: []*types.Webhook{{
+				ID: "w", URL: "https://example.com", ConfirmationText: "sure?", SkipConfirmationDialog: true, ButtonText: "b",
+				ButtonStyle: types.WebhookButtonStylePrimary, AccessLevel: types.WebhookAccessLevelChannelAdmins,
+				DisplayMode: types.WebhookDisplayModeAlways, Payload: map[string]any{"k": "v"},
+				PlainTextInput: []*types.WebhookPlainTextInput{{ID: "p", Description: "d", MinLength: 1, MaxLength: 10, Multiline: true, InitialValue: "iv"}},
+				CheckboxInput:  []*types.WebhookCheckboxInput{{ID: "c", Label: "l", Options: []*types.WebhookCheckboxOption{{Value: "v", Text: "t", Selected: true}}}},
+				AfterClick:     &types.WebhookAfterClick{HideButtons: types.WebhookHideButtonsAll, HideWebhookIDs: []string{"w"}, StatusText: "s", ResetAfterSeconds: 30},
+			}},
+			Metadata:             map[string]any{"k": "v"},
+			FailOnRateLimitError: true,
+			DeletionDelaySeconds: 30,
+		}
+
+		b, err := json.Marshal(a)
+		require.NoError(t, err)
+
+		var got types.Alert
+		require.NoError(t, json.Unmarshal(b, &got))
+		assert.Equal(t, a, got)
+	})
+}
+
 func TestAlertCleanUnicodeTruncation(t *testing.T) {
 	t.Parallel()
 
