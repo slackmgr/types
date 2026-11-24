@@ -30,6 +30,12 @@
 // ChannelProcessingState - Tracks per-channel processing timestamps and open issue counts
 // to prevent concurrent processing and ensure regular intervals.
 //
+// # Authentication
+//
+// Principal, Authenticator and Authorizer define optional, pluggable authentication and authorization for the
+// REST API of the Slack Manager core library. Scopes (ScopeAlertsWrite, ScopeAlertsTest, ScopeConfigRead,
+// ScopeAll) name the permissions of the API endpoints. ChainAuthenticators combines several authenticators.
+//
 // # Insights
 //
 // InsightsEvent is a structured, queryable record of what the Slack Manager did (alert outcomes, issue

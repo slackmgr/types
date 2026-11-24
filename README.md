@@ -416,6 +416,37 @@ Count and stats queries can group by the dimensions `bucket`, `channel`, `relate
 
 Count and stats queries return at most `MaxInsightsRows` (10,000) groups. With an explicit `Limit` (e.g. top-N), further groups are silently dropped. Without one, a query matching more groups fails with `ErrInsightsTooManyRows` rather than returning a truncated result.
 
+## Authentication
+
+The REST API of `slackmgr/core` supports optional, pluggable authentication. This package defines the contract, so that authenticators (e.g. an OIDC plugin) can be implemented without depending on `core`.
+
+```go
+type Principal struct {
+    ID         string            // stable caller identity, e.g. "alertmanager-prod"
+    Scopes     []string          // e.g. ScopeAlertsWrite
+    Attributes map[string]string // authenticator specific, e.g. token claims
+}
+
+type Authenticator interface {
+    Authenticate(r *http.Request) (*Principal, error)
+}
+
+type Authorizer interface {
+    Authorize(ctx context.Context, principal *Principal, scope string) error
+}
+```
+
+| Scope | Allows |
+|---|---|
+| `ScopeAlertsWrite` (`alerts:write`) | Sending alerts and Prometheus webhooks |
+| `ScopeAlertsTest` (`alerts:test`) | Testing alerts (`POST /alerts-test`) |
+| `ScopeConfigRead` (`config:read`) | Reading routing rules and managed channels |
+| `ScopeAll` (`*`) | Everything |
+
+An `Authenticator` returns `ErrNoCredentials` when the request has no credentials it handles (HTTP 401, or anonymous in permissive mode), and `ErrInvalidCredentials` when they are invalid (HTTP 401). An `Authorizer` returns `ErrForbidden` to deny (HTTP 403). Any other error is an internal error (HTTP 500, fail closed). Errors may be wrapped.
+
+`ChainAuthenticators` tries several authenticators in order and returns the first principal, or the most significant error (internal, then invalid, then no credentials). `AuthenticatorFunc` and `AuthorizerFunc` adapt plain functions. `Principal.HasScope` checks a scope, honouring `ScopeAll`.
+
 ## Field Specifications
 
 The `Field` struct is used for additional key-value pairs displayed in Slack:

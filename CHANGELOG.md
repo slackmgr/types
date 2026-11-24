@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Authentication and authorization types for the REST API: `Principal` (with `HasScope`), the `Authenticator` and `Authorizer` interfaces (and `AuthenticatorFunc`, `AuthorizerFunc`), `ChainAuthenticators`, the errors `ErrNoCredentials`, `ErrInvalidCredentials` and `ErrForbidden`, and the scopes `ScopeAlertsWrite`, `ScopeAlertsTest`, `ScopeConfigRead` and `ScopeAll` (`KnownScopes`, `IsKnownScope`)
+
 ## [0.13.0] - 2026-11-15
 
 ### Changed
