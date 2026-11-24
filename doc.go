@@ -34,7 +34,8 @@
 //
 // Principal, Authenticator and Authorizer define optional, pluggable authentication and authorization for the
 // REST API of the Slack Manager core library. Scopes (ScopeAlertsWrite, ScopeAlertsTest, ScopeConfigRead,
-// ScopeAll) name the permissions of the API endpoints. ChainAuthenticators combines several authenticators.
+// ScopeAll) name the permissions of the API endpoints. ChannelAuthorizer optionally restricts the Slack channels a
+// principal may send alerts to. ChainAuthenticators combines several authenticators.
 //
 // # Insights
 //

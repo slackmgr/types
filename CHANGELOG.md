@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `ChannelAuthorizer` (and `ChannelAuthorizerFunc`): optional extension of `Authorizer` that decides whether a principal may send alerts to a Slack channel
+
 ## [0.14.0] - 2026-11-24
 
 ### Added

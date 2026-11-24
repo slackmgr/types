@@ -445,6 +445,8 @@ type Authorizer interface {
 
 An `Authenticator` returns `ErrNoCredentials` when the request has no credentials it handles (HTTP 401, or anonymous in permissive mode), and `ErrInvalidCredentials` when they are invalid (HTTP 401). An `Authorizer` returns `ErrForbidden` to deny (HTTP 403). Any other error is an internal error (HTTP 500, fail closed). Errors may be wrapped.
 
+An `Authorizer` that also implements `ChannelAuthorizer` (`AuthorizeChannel(ctx, principal, channelID) error`) decides which Slack channels a principal may send alerts to, including the channels escalations may move issues to. Without it, the API uses its built-in channel access rules.
+
 `ChainAuthenticators` tries several authenticators in order and returns the first principal, or the most significant error (internal, then invalid, then no credentials). `AuthenticatorFunc` and `AuthorizerFunc` adapt plain functions. `Principal.HasScope` checks a scope, honouring `ScopeAll`.
 
 ## Field Specifications

@@ -107,8 +107,28 @@ func (f AuthorizerFunc) Authorize(ctx context.Context, principal *Principal, sco
 	return f(ctx, principal, scope)
 }
 
-// ChainAuthenticators returns an [Authenticator] (as an [AuthenticatorFunc]) that tries the given authenticators in order, and returns the
-// first principal found. Nil authenticators are skipped.
+// ChannelAuthorizer decides whether an authenticated [Principal] may send alerts to a Slack channel. It is an
+// optional extension of [Authorizer]: when the configured authorizer also implements ChannelAuthorizer, the REST
+// API calls it for the channel of each alert, and for the channels that escalations may move the issue to.
+// Otherwise, the API uses its built-in channel access rules.
+//
+// channelID is the upper-cased channel ID after routing (or an upper-cased channel name that could not be mapped
+// to an ID). AuthorizeChannel returns nil if the channel is allowed, [ErrForbidden] if it is not, or any other
+// error for internal failures. It is called concurrently and must be safe for concurrent use.
+type ChannelAuthorizer interface {
+	AuthorizeChannel(ctx context.Context, principal *Principal, channelID string) error
+}
+
+// ChannelAuthorizerFunc is a function that implements [ChannelAuthorizer].
+type ChannelAuthorizerFunc func(ctx context.Context, principal *Principal, channelID string) error
+
+// AuthorizeChannel calls f(ctx, principal, channelID).
+func (f ChannelAuthorizerFunc) AuthorizeChannel(ctx context.Context, principal *Principal, channelID string) error {
+	return f(ctx, principal, channelID)
+}
+
+// ChainAuthenticators returns an [Authenticator] (as an [AuthenticatorFunc]) that tries the given authenticators
+// in order, and returns the first principal found. Nil authenticators are skipped.
 //
 // If no authenticator succeeds, it returns the most significant error: an internal error (the first one) over
 // [ErrInvalidCredentials] over [ErrNoCredentials]. This lets authenticators of different kinds (e.g. API keys

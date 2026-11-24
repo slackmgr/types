@@ -69,6 +69,23 @@ func TestAuthorizerFunc(t *testing.T) {
 	require.ErrorIs(t, authz.Authorize(t.Context(), p, types.ScopeConfigRead), types.ErrForbidden)
 }
 
+func TestChannelAuthorizerFunc(t *testing.T) {
+	t.Parallel()
+
+	var authz types.ChannelAuthorizer = types.ChannelAuthorizerFunc(func(_ context.Context, p *types.Principal, channelID string) error {
+		if p.ID == "a" && channelID == "C123" {
+			return nil
+		}
+
+		return types.ErrForbidden
+	})
+
+	p := &types.Principal{ID: "a"}
+
+	require.NoError(t, authz.AuthorizeChannel(t.Context(), p, "C123"))
+	require.ErrorIs(t, authz.AuthorizeChannel(t.Context(), p, "C456"), types.ErrForbidden)
+}
+
 func TestChainAuthenticators(t *testing.T) {
 	t.Parallel()
 
